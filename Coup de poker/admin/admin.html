@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlayPulse | Administration des aventures</title>
+  <link rel="stylesheet" href="style-admin.css" />
+  <style>
+    :root {
+      --primary: #1c1c1c;
+      --accent: #2b89ff;
+      --bg-light: #f5f7fb;
+      --text: #222;
+      --border: #ddd;
+      --radius: 10px;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-light);
+      color: var(--text);
+    }
+
+    /* === Bandeau principal === */
+    .topbar {
+      background: var(--primary);
+      color: white;
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+
+    .topbar small {
+      opacity: 0.8;
+      font-weight: 400;
+    }
+
+    /* === Header secondaire === */
+    header {
+      background: white;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h2 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    header button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.6rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    header button:hover {
+      background: #1e70d3;
+    }
+
+    /* === Filtres === */
+    .filters {
+      background: white;
+      padding: 1rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 2rem;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .filters label {
+      font-weight: 500;
+    }
+
+    .filters select {
+      padding: 0.5rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      font-size: 0.95rem;
+    }
+
+    /* === Contenu === */
+    main {
+      padding: 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    main p {
+      text-align: center;
+      font-style: italic;
+      color: #555;
+    }
+
+    /* === Responsive === */
+    @media (max-width: 700px) {
+      header, .filters {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+      }
+      header button {
+        align-self: stretch;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Bandeau principal -->
+  <div class="topbar">
+    <h1>PlayPulse</h1>
+    <small>Interface d’administration</small>
+  </div>
+
+  <!-- En-tête -->
+  <header>
+    <h2>Administration des aventures</h2>
+    <button id="newAventureBtn">➕ Nouvelle aventure</button>
+  </header>
+
+  <!-- Filtres -->
+  <section class="filters">
+    <label for="paysFilter">🌍 Filtrer par pays :</label>
+    <select id="paysFilter"></select>
+
+    <label for="villeFilter">🏙️ Filtrer par ville :</label>
+    <select id="villeFilter"></select>
+  </section>
+
+  <!-- Contenu principal -->
+  <main id="aventuresContainer">
+    <p>Chargement des aventures en cours...</p>
+  </main>
+
+  <!-- Sécurité admin -->
+  <script type="module" src="./js/admin-protect.js"></script>
+
+  <!-- Script principal -->
+  <script type="module" src="./js/admin.js"></script>
+</body>
+</html>

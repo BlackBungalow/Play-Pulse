@@ -1,0 +1,27 @@
+<!-- choix-aventure.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Choisir une aventure</title>
+  <link rel="stylesheet" href="./css/choix-aventure.css" />
+</head>
+<body>
+  <header>
+    <h1>🎯 Choisissez votre aventure</h1>
+    <div class="filters">
+      <select id="filterPays">
+        <option value="">🌍 Tous les pays</option>
+      </select>
+      <select id="filterVille">
+        <option value="">🏙️ Toutes les villes</option>
+      </select>
+    </div>
+  </header>
+
+  <main id="aventuresContainer" class="aventures-container"></main>
+
+  <script type="module" src="./js/choix-aventure.js"></script>
+</body>
+</html>

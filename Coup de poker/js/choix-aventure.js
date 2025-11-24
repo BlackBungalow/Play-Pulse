@@ -1,0 +1,284 @@
+// choix-aventure.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ✅ Config Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyB7e3Fk1Sc8S9ykq1v3xVktS5UOUDBfaaM",
+  authDomain: "coup-de-poker-ccd99.firebaseapp.com",
+  projectId: "coup-de-poker-ccd99",
+  storageBucket: "coup-de-poker-ccd99.appspot.com",
+  messagingSenderId: "464219267705",
+  appId: "1:464219267705:web:b39a36857091a0c0392aa8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// =============================================================
+// 🌍 Variables DOM
+// =============================================================
+const container = document.getElementById("aventuresContainer");
+const paysFilter = document.getElementById("filterPays");
+const villeFilter = document.getElementById("filterVille");
+const statusMsg = document.getElementById("statusMsg");
+const currentPage = window.location.pathname.split("/").pop();
+
+let allAventures = [];
+let userPosition = null;
+
+// =============================================================
+// 🎞️ Animation de chargement
+// =============================================================
+function showLoading(message = "⏳ Chargement des aventures...") {
+  if (statusMsg) {
+    statusMsg.innerHTML = `<span class="loading-spinner">🔄</span> ${message}`;
+    statusMsg.style.opacity = "0.8";
+  }
+  if (container) {
+    container.innerHTML = `
+      <div style="text-align:center;margin-top:2rem;animation:fadeIn 0.5s ease;">
+        <div class="spinner" style="
+          width:40px;
+          height:40px;
+          border:4px solid #ccc;
+          border-top:4px solid #2b3a67;
+          border-radius:50%;
+          animation:spin 1s linear infinite;
+          margin:auto;
+        "></div>
+        <p style="margin-top:1rem;color:#555;">${message}</p>
+      </div>
+      <style>
+        @keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+        @keyframes fadeIn {from{opacity:0;}to{opacity:1;}}
+      </style>
+    `;
+  }
+}
+
+function hideLoading() {
+  if (statusMsg) statusMsg.innerHTML = "";
+}
+
+// =============================================================
+// 🌍 Calcul distance (Haversine)
+// =============================================================
+function getDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
+}
+
+// =============================================================
+// 🧭 Chargement des aventures visibles uniquement
+// =============================================================
+async function loadAventures() {
+  try {
+    showLoading("⏳ Recherche des aventures publiques proches...");
+
+    const q = query(collection(db, "aventures"), where("public", "==", true));
+    const snapshot = await getDocs(q);
+
+    allAventures = [];
+    const paysSet = new Set();
+    const villesSet = new Set();
+
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data();
+      const aventure = { id: docSnap.id, ...data };
+
+      // 🔹 Calcul distance si champ "centre" disponible
+      if (userPosition && data.centre && Array.isArray(data.centre)) {
+        const [lng, lat] = data.centre;
+        aventure.distance = getDistanceKm(userPosition.lat, userPosition.lng, lat, lng);
+      }
+
+      // 🔹 Si pas de champ "centre", on essaie via le premier POI
+      if (!aventure.distance && userPosition) {
+        try {
+          const poisSnap = await getDocs(collection(db, "aventures", docSnap.id, "pois"));
+          poisSnap.forEach(p => {
+            const poiData = p.data();
+            if (poiData.lat && poiData.lng && !aventure.distance) {
+              aventure.distance = getDistanceKm(
+                userPosition.lat,
+                userPosition.lng,
+                poiData.lat,
+                poiData.lng
+              );
+            }
+          });
+        } catch (err) {
+          console.warn(`⚠️ Erreur lecture POI pour ${data.nom || docSnap.id}:`, err);
+        }
+      }
+
+      console.log(`📍 ${data.nom || "Aventure"} — distance calculée :`, aventure.distance || "n/a");
+
+      allAventures.push(aventure);
+      if (data.pays) paysSet.add(data.pays);
+      if (data.ville) villesSet.add(data.ville);
+    }
+
+    hideLoading();
+
+    // 🎯 Sur explore.html, afficher les filtres
+    if (paysFilter && villeFilter) {
+      updateSelectOptions(paysFilter, paysSet);
+      updateSelectOptions(villeFilter, villesSet);
+    }
+
+    // 🎯 Sur catalogue-proximite, filtrer à <5 km
+    if (currentPage.includes("catalogue-proximite")) {
+      const nearby = allAventures.filter(av => av.distance != null && av.distance <= 5);
+      if (statusMsg) {
+        if (nearby.length > 0) {
+          statusMsg.textContent = `✅ ${nearby.length} aventure(s) publique(s) trouvée(s) à moins de 5 km.`;
+        } else {
+          statusMsg.innerHTML = "🥴 Aucune aventure publique à moins de 5 km.";
+        }
+      }
+      displayAventures(nearby);
+    } else {
+      displayAventures(allAventures);
+    }
+  } catch (err) {
+    console.error("💥 Erreur lors du chargement des aventures :", err);
+    if (container)
+      container.innerHTML = `<p style="color:#c00;">Erreur de chargement des aventures.</p>`;
+  }
+}
+
+// =============================================================
+// 🔽 Gestion filtres et affichage
+// =============================================================
+function updateSelectOptions(select, values) {
+  select.innerHTML = `<option value="">${select.id === "filterPays" ? "🌍 Tous les pays" : "🏙️ Toutes les villes"}</option>`;
+  [...values].sort().forEach(val => {
+    const opt = document.createElement("option");
+    opt.value = val;
+    opt.textContent = val;
+    select.appendChild(opt);
+  });
+}
+
+function displayAventures(aventures) {
+  if (!container) return;
+  container.innerHTML = "";
+
+  // ✅ Trie les aventures par distance si dispo
+  aventures.sort((a, b) => {
+    if (a.distance != null && b.distance != null) return a.distance - b.distance;
+    if (a.distance != null) return -1;
+    if (b.distance != null) return 1;
+    return 0;
+  });
+
+  aventures.forEach((av, index) => {
+    const card = document.createElement("div");
+    card.className = "aventure-card";
+    card.style.opacity = "0";
+    card.style.transform = "translateY(10px)";
+    card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+
+    card.innerHTML = `
+      <h2>${av.nom || "Sans titre"}</h2>
+      <p>📍 ${av.ville || "Ville inconnue"}, ${av.pays || "Pays inconnu"}</p>
+      ${av.distance != null ? `<p>📏 ~${av.distance} km</p>` : ""}
+      <p>🎮 Mode : ${av.lineaire ? "Parcours linéaire" : "Libre"}</p>
+      <button onclick="launchAventure('${av.id}')">▶️ Jouer</button>
+    `;
+
+    container.appendChild(card);
+
+    // ✨ Animation fade-in progressive
+    setTimeout(() => {
+      card.style.opacity = "1";
+      card.style.transform = "translateY(0)";
+    }, 100 * index);
+  });
+
+  if (aventures.length === 0) {
+    container.innerHTML = `<p style="color:#666;text-align:center;">Aucune aventure disponible pour le moment.</p>`;
+  }
+}
+
+// =============================================================
+// 🎮 Lancement de l’aventure
+// =============================================================
+window.launchAventure = (id) => {
+  if (!id) {
+    console.error("❌ ID d’aventure manquant !");
+    return;
+  }
+
+  // Enregistre l'aventure dans le stockage local pour persistance
+  localStorage.setItem("current_aventure_id", id);
+
+  // Redirige directement vers la page de jeu avec l'ID en paramètre
+  window.location.href = `game.html?id=${id}`;
+};
+
+// =============================================================
+// 🔍 Application des filtres
+// =============================================================
+function applyFilters() {
+  const pays = paysFilter ? paysFilter.value : "";
+  const ville = villeFilter ? villeFilter.value : "";
+
+  const filtered = allAventures.filter(av => {
+    return (!pays || av.pays === pays) && (!ville || av.ville === ville);
+  });
+
+  displayAventures(filtered);
+}
+
+// ✅ Ajout sécurisé des listeners
+if (paysFilter) paysFilter.addEventListener("change", applyFilters);
+if (villeFilter) villeFilter.addEventListener("change", applyFilters);
+
+// =============================================================
+// 🛰️ Géolocalisation du joueur
+// =============================================================
+function initGeolocation() {
+  if (!navigator.geolocation) {
+    console.warn("Géolocalisation non disponible.");
+    loadAventures();
+    return;
+  }
+
+  showLoading("📍 Détection de votre position...");
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      userPosition = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      };
+      console.log("🛰️ Position détectée :", userPosition);
+      loadAventures();
+    },
+    (err) => {
+      console.warn("Géolocalisation refusée ou échouée :", err.message);
+      if (statusMsg) statusMsg.textContent = "❌ Géolocalisation refusée.";
+      loadAventures();
+    },
+    { enableHighAccuracy: true }
+  );
+}
+
+initGeolocation();

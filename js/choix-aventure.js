@@ -5,7 +5,8 @@ import {
   collection,
   getDocs,
   query,
-  where
+  where,
+  addDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ✅ Config Firebase
@@ -27,7 +28,7 @@ const db = getFirestore(app);
 const container = document.getElementById("aventuresContainer");
 const paysFilter = document.getElementById("filterPays");
 const villeFilter = document.getElementById("filterVille");
-const statusMsg = document.getElementById("statusMsg");
+const statusMsg = document.getElementById("statusMsg") || document.getElementById("message");
 const currentPage = window.location.pathname.split("/").pop();
 
 let allAventures = [];
@@ -195,15 +196,41 @@ function displayAventures(aventures) {
     card.style.transform = "translateY(10px)";
     card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
 
+    const thumb = av.illustrationUrl
+      ? `<img src="${av.illustrationUrl}" alt="Illustration ${av.nom || "aventure"}" class="aventure-thumb" loading="lazy" />`
+      : `<div class="aventure-thumb thumb-placeholder">🏝️</div>`;
+    const presentation = av.presentation || "Pas encore de présentation fournie.";
+
     card.innerHTML = `
-      <h2>${av.nom || "Sans titre"}</h2>
-      <p>📍 ${av.ville || "Ville inconnue"}, ${av.pays || "Pays inconnu"}</p>
-      ${av.distance != null ? `<p>📏 ~${av.distance} km</p>` : ""}
-      <p>🎮 Mode : ${av.lineaire ? "Parcours linéaire" : "Libre"}</p>
-      <button onclick="launchAventure('${av.id}')">▶️ Jouer</button>
+      <div class="aventure-card-header">
+        ${thumb}
+        <div class="aventure-card-title">
+          <h2>${av.nom || "Sans titre"}</h2>
+          <p class="aventure-location">📍 ${av.ville || "Ville inconnue"}, ${av.pays || "Pays inconnu"}</p>
+          ${av.distance != null ? `<p class=\"aventure-distance\">📏 ~${av.distance} km</p>` : ""}
+        </div>
+      </div>
+      <p class="aventure-presentation">${presentation}</p>
+      <p class="aventure-mode">🎮 Mode : ${av.lineaire ? "Parcours linéaire" : "Libre"}</p>
+      <div class="aventure-actions-row">
+        <button class="btn-play" onclick="launchAventure('${av.id}')">▶️ Jouer</button>
+        <div class="share-block">
+          <button class="share-toggle" type="button">📨 Partager cette aventure avec mes amis</button>
+          <div class="share-panel" hidden>
+            <label class="share-label" for="share-${av.id}">Adresse email de votre ami</label>
+            <div class="share-input-row">
+              <input id="share-${av.id}" class="share-email-input" type="email" placeholder="ami@example.com" autocomplete="email" />
+              <button class="share-send" type="button">Envoyer</button>
+            </div>
+            <p class="share-status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
     `;
 
     container.appendChild(card);
+
+    setupShareInteractions(card, av);
 
     // ✨ Animation fade-in progressive
     setTimeout(() => {
@@ -232,6 +259,92 @@ window.launchAventure = (id) => {
   // Redirige directement vers la page de jeu avec l'ID en paramètre
   window.location.href = `game.html?id=${id}`;
 };
+
+// =============================================================
+// 🤝 Invitations par email (stockées dans Firestore)
+// =============================================================
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function setupShareInteractions(card, aventure) {
+  const toggleBtn = card.querySelector(".share-toggle");
+  const panel = card.querySelector(".share-panel");
+  const sendBtn = card.querySelector(".share-send");
+  const emailInput = card.querySelector(".share-email-input");
+  const statusEl = card.querySelector(".share-status");
+
+  if (!toggleBtn || !panel || !sendBtn || !emailInput || !statusEl) return;
+
+  toggleBtn.addEventListener("click", () => {
+    const isOpen = !panel.hasAttribute("hidden");
+    if (isOpen) {
+      panel.setAttribute("hidden", "");
+      statusEl.textContent = "";
+    } else {
+      panel.removeAttribute("hidden");
+      emailInput.focus();
+    }
+  });
+
+  sendBtn.addEventListener("click", () => {
+    handleInvitationSend({ aventure, emailInput, statusEl, sendBtn });
+  });
+
+  emailInput.addEventListener("keypress", (evt) => {
+    if (evt.key === "Enter") {
+      evt.preventDefault();
+      handleInvitationSend({ aventure, emailInput, statusEl, sendBtn });
+    }
+  });
+}
+
+async function handleInvitationSend({ aventure, emailInput, statusEl, sendBtn }) {
+  const friendEmail = emailInput.value.trim();
+
+  if (!emailRegex.test(friendEmail)) {
+    statusEl.textContent = "Merci de saisir une adresse email valide.";
+    statusEl.classList.remove("success");
+    statusEl.classList.add("error");
+    emailInput.focus();
+    return;
+  }
+
+  const playerId = localStorage.getItem("playerId") || "joueur-anonyme";
+  const ville = aventure.ville || "sa ville";
+  const message = `${playerId} vous a invité à jouer à une véritable aventure en ville à ${ville}. Rejoignez PlayPulse et jouez en famille ou entre amis!`;
+  const invitationLink = `${window.location.origin}/game.html?id=${aventure.id}`;
+
+  statusEl.textContent = "Envoi de l'invitation en cours...";
+  statusEl.classList.remove("error", "success");
+  sendBtn.disabled = true;
+
+  try {
+    await addDoc(collection(db, "invitations"), {
+      playerId,
+      friendEmail,
+      aventureId: aventure.id,
+      aventureNom: aventure.nom || null,
+      ville: aventure.ville || null,
+      pays: aventure.pays || null,
+      invitationLink,
+      message,
+      createdAt: new Date(),
+      status: "pending_email",
+      channel: "firebase_cloud_messaging"
+    });
+
+    statusEl.textContent = "Invitation envoyée ! Votre ami recevra un email.";
+    statusEl.classList.remove("error");
+    statusEl.classList.add("success");
+    emailInput.value = "";
+  } catch (error) {
+    console.error("❌ Erreur lors de l'envoi de l'invitation :", error);
+    statusEl.textContent = "Impossible d'envoyer l'invitation pour le moment.";
+    statusEl.classList.remove("success");
+    statusEl.classList.add("error");
+  } finally {
+    sendBtn.disabled = false;
+  }
+}
 
 // =============================================================
 // 🔍 Application des filtres

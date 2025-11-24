@@ -37,6 +37,13 @@
       <label for="nom">Nom de l’aventure</label>
       <input type="text" id="nom" name="nom" required />
 
+      <label for="illustration">Image d’illustration</label>
+      <input type="file" id="illustration" name="illustration" accept="image/*" />
+      <div id="illustrationPreview" class="mediaPreview"></div>
+
+      <label for="presentation">Présentation de l’aventure</label>
+      <textarea id="presentation" name="presentation" rows="4" placeholder="Décris brièvement l’expérience proposée"></textarea>
+
       <label>Type de parcours</label>
       <div class="radio-group" id="lineaireGroup">
         <label><input type="radio" name="lineaire" value="true"> Linéaire</label>

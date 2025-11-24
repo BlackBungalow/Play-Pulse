@@ -12,6 +12,8 @@ const storage = getStorage(app);
 const form = document.getElementById("createForm");
 const poiContainer = document.getElementById("poiContainer");
 const addPoiBtn = document.getElementById("addPoiBtn");
+const illustrationInput = document.getElementById("illustration");
+const illustrationPreview = document.getElementById("illustrationPreview");
 
 let aventureId = null;
 let hasUnsavedChanges = false;
@@ -233,6 +235,26 @@ lineaireRadios.forEach(radio => {
 addPoiBtn.addEventListener("click", () => addPoiToDOM());
 
 // ===========================================================
+// 🖼️ Preview illustration
+// ===========================================================
+function renderIllustrationPreview(file) {
+  if (!illustrationPreview) return;
+  if (!file) {
+    illustrationPreview.innerHTML = "";
+    return;
+  }
+  const url = URL.createObjectURL(file);
+  illustrationPreview.innerHTML = `<img src="${url}" alt="Illustration" style="max-width: 240px; border-radius: 8px;" />`;
+}
+
+if (illustrationInput) {
+  illustrationInput.addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    renderIllustrationPreview(file);
+  });
+}
+
+// ===========================================================
 // 🔢 Tri automatique des POI en mode linéaire
 // ===========================================================
 function sortPoisByOrder() {
@@ -259,12 +281,20 @@ form.addEventListener("submit", async (e) => {
 
   aventureLineaire = form.querySelector('input[name="lineaire"]:checked').value === "true";
 
+  let illustrationUrl = null;
+  const illustrationFile = illustrationInput?.files?.[0];
+  if (illustrationFile) {
+    illustrationUrl = await uploadMediaFile(illustrationFile, "illustration", aventureId);
+  }
+
   const aventureData = {
     nom,
     pays: form.pays.value.trim(),
     ville: form.ville.value.trim(),
     lineaire: aventureLineaire,
     public: form.querySelector('input[name="public"]:checked').value === "true",
+    presentation: form.presentation.value.trim(),
+    illustrationUrl: illustrationUrl || null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };

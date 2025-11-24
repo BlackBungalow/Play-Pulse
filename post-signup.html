@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Complétez votre profil - PlayPulse</title>
+  <link rel="stylesheet" href="style-front.css" />
+  <style>
+    body {
+      background: linear-gradient(180deg, #0b0c10, #1e293b);
+      font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .profile-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #00bcd4;
+    }
+
+    p {
+      font-size: 0.95rem;
+      opacity: 0.8;
+      margin-bottom: 1.5rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      outline: none;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    button {
+      width: 100%;
+      background: linear-gradient(135deg, #00bcd4, #3b82f6);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0.9rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .success-message {
+      color: #10b981;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+
+    .error-message {
+      color: #ef4444;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="profile-card">
+    <h1>Bienvenue sur PlayPulse 🎮</h1>
+    <p>Avant de commencer, complétez votre profil.</p>
+
+    <form id="profileForm">
+      <input type="text" id="firstName" placeholder="Prénom" required />
+      <input type="text" id="lastName" placeholder="Nom" required />
+      <input type="date" id="birthDate" placeholder="Date de naissance" required />
+      <button type="submit">Valider mon profil</button>
+    </form>
+
+    <div id="successMessage" class="success-message hidden">
+      ✅ Profil enregistré avec succès !
+    </div>
+    <div id="errorMessage" class="error-message hidden"></div>
+  </div>
+
+  <script type="module">
+    import { app } from "./js/firebase-config.js";
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const form = document.getElementById("profileForm");
+    const successMessage = document.getElementById("successMessage");
+    const errorMessage = document.getElementById("errorMessage");
+
+    let currentUser = null;
+
+    // Vérifie l’utilisateur connecté
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "identification.html";
+      } else {
+        currentUser = user;
+      }
+    });
+
+    // Soumission du formulaire
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const firstName = form.firstName.value.trim();
+      const lastName = form.lastName.value.trim();
+      const birthDate = form.birthDate.value;
+
+      if (!firstName || !lastName || !birthDate) {
+        errorMessage.textContent = "Veuillez remplir tous les champs.";
+        errorMessage.classList.remove("hidden");
+        return;
+      }
+
+      try {
+        await setDoc(doc(db, "users", currentUser.uid), {
+          firstName,
+          lastName,
+          birthDate,
+          email: currentUser.email,
+          createdAt: new Date()
+        });
+
+        localStorage.setItem("firstName", firstName);
+        successMessage.classList.remove("hidden");
+        errorMessage.classList.add("hidden");
+
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 1200);
+      } catch (err) {
+        console.error(err);
+        errorMessage.textContent = "Erreur : " + err.message;
+        errorMessage.classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+</html>

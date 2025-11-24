@@ -34,9 +34,12 @@ const poiContainer = document.getElementById("poiContainer");
 const addPoiBtn = document.getElementById("addPoiBtn");
 const backBtn = document.getElementById("backBtn");
 const lineaireBanner = document.getElementById("lineaireBanner");
+const illustrationInput = document.getElementById("illustration");
+const illustrationPreview = document.getElementById("illustrationPreview");
 
 let aventureLineaire = false;
 let hasUnsavedChanges = false;
+let currentIllustrationUrl = null;
 
 console.log("🧭 [INIT] Chargement du module edit-aventure.js...");
 console.log("📌 ID aventure :", aventureId);
@@ -91,11 +94,60 @@ async function uploadMediaFile(file, type, poiId, oldUrl = null) {
 }
 
 // ===========================================================
+// 🖼️ Upload illustration aventure
+// ===========================================================
+async function uploadIllustration(file, oldUrl = null) {
+  if (!file) return null;
+  try {
+    if (oldUrl) {
+      const pathStart = oldUrl.indexOf("/o/") + 3;
+      const pathEnd = oldUrl.indexOf("?") > -1 ? oldUrl.indexOf("?") : undefined;
+      const oldPath = decodeURIComponent(oldUrl.substring(pathStart, pathEnd));
+      const oldRef = ref(storage, oldPath);
+      await deleteObject(oldRef);
+      console.log(`🗑️ Ancienne illustration supprimée : ${oldPath}`);
+    }
+
+    const path = `aventures/${aventureId}/illustration/${Date.now()}_${file.name}`;
+    const fileRef = ref(storage, path);
+    await uploadBytes(fileRef, file);
+    const url = await getDownloadURL(fileRef);
+    console.log(`✅ Illustration téléversée : ${url}`);
+    return url;
+  } catch (err) {
+    console.error("❌ Erreur upload illustration :", err);
+    return null;
+  }
+}
+
+// ===========================================================
 // 🔹 Bannière linéaire
 // ===========================================================
 function updateLineaireBanner(show) {
   if (!lineaireBanner) return;
   lineaireBanner.style.display = show ? "block" : "none";
+}
+
+// ===========================================================
+// 🖼️ Preview illustration
+// ===========================================================
+function renderIllustrationPreview(source) {
+  if (!illustrationPreview) return;
+  if (!source) {
+    illustrationPreview.innerHTML = "";
+    return;
+  }
+
+  const url = source instanceof File ? URL.createObjectURL(source) : source;
+  illustrationPreview.innerHTML = `<img src="${url}" alt="Illustration de l’aventure" style="max-width: 240px; border-radius: 8px;" />`;
+}
+
+if (illustrationInput) {
+  illustrationInput.addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    renderIllustrationPreview(file || currentIllustrationUrl);
+    hasUnsavedChanges = true;
+  });
 }
 
 // ===========================================================
@@ -118,6 +170,9 @@ async function loadAventure() {
     form.pays.value = data.pays || "";
     form.ville.value = data.ville || "";
     form.nom.value = data.nom || "";
+    form.presentation.value = data.presentation || "";
+    currentIllustrationUrl = data.illustrationUrl || null;
+    renderIllustrationPreview(currentIllustrationUrl);
     aventureLineaire = !!data.lineaire;
 
     const lineRadio = form.querySelector(`input[name="lineaire"][value="${String(aventureLineaire)}"]`);
@@ -377,6 +432,12 @@ form.addEventListener("submit", async (e) => {
   try {
     const aventureRef = doc(db, "aventures", aventureId);
 
+    let illustrationUrl = currentIllustrationUrl;
+    const illustrationFile = illustrationInput?.files?.[0];
+    if (illustrationFile) {
+      illustrationUrl = await uploadIllustration(illustrationFile, currentIllustrationUrl);
+    }
+
     // Récupération des valeurs du formulaire
     const aventureData = {
       pays: form.pays.value.trim(),
@@ -386,11 +447,15 @@ form.addEventListener("submit", async (e) => {
       public: form.querySelector('input[name="public"]:checked')?.value === "true",
       dispoDebut: form.dispoDebut.value ? Timestamp.fromDate(new Date(form.dispoDebut.value)) : null,
       dispoFin: form.dispoFin.value ? Timestamp.fromDate(new Date(form.dispoFin.value)) : null,
+      presentation: form.presentation.value.trim(),
+      illustrationUrl: illustrationUrl || null,
       updatedAt: serverTimestamp(),
     };
 
     await setDoc(aventureRef, aventureData, { merge: true });
     console.log("✅ Aventure sauvegardée :", aventureData);
+    currentIllustrationUrl = aventureData.illustrationUrl;
+    renderIllustrationPreview(currentIllustrationUrl);
 
     // --- Sauvegarde des POI ---
     const poiItems = poiContainer.querySelectorAll(".poi-item");

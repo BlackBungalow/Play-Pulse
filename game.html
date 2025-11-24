@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlayPulse - Aventure</title>
+
+  <!-- ✅ Styles -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style-front.css" />
+  <link rel="stylesheet" href="css/challenge-view.css">
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+
+  <!-- 🧭 Icône -->
+  <link rel="icon" href="favicon.png" type="image/png" />
+</head>
+
+<body class="game-interface">
+
+  <!-- =========================================================
+       🔐 Vérification d’authentification
+       ========================================================= -->
+  <script type="module">
+    import { getAuth, onAuthStateChanged } 
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { app } from "./js/firebase-config.js";
+
+    const auth = getAuth(app);
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        console.warn("⚠️ Utilisateur non connecté → redirection");
+        window.location.href = "identification.html";
+      }
+    });
+  </script>
+
+  <!-- =========================================================
+       🧭 HEADER DU JEU
+       ========================================================= -->
+  <header class="game-header">
+    <div class="left">
+      <button id="quitButton" class="icon-btn">← Quitter</button>
+      <h1 id="aventureTitle">Aventure</h1>
+    </div>
+    <div class="right">
+      <div id="welcome">Bienvenue, <span id="playerName"></span> !</div>
+      <div id="scoreDisplay" class="score-badge">Score : 0 pts</div>
+    </div>
+  </header>
+
+  <!-- ✅ Informations aventure -->
+  <div id="aventureInfo"
+       style="padding: 0.6rem 1rem; background: rgba(0,0,0,0.6); z-index: 2;">
+  </div>
+
+  <!-- ✅ Carte -->
+  <div id="map" class="map-container"></div>
+
+  <!-- ✅ Modale de défi (ancienne version - gardée pour compatibilité) -->
+  <div id="challengeModal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="challengeTitle">🎯 Défi</h2>
+
+      <div id="challengeQuestion" class="challenge-text"></div>
+      <div id="challengeMedia" class="challenge-media hidden"></div>
+
+      <div id="textAnswerBlock" class="answer-block hidden">
+        <input type="text" id="challengeAnswer" placeholder="Votre réponse" />
+      </div>
+
+      <div id="qcmAnswerBlock" class="answer-block hidden"></div>
+
+      <!-- 🆕 Bloc pour les défis vocaux -->
+      <div id="vocalAnswerBlock" class="answer-block hidden">
+        <p>🎤 Dites la phrase demandée</p>
+        <button id="btnVocal">🎧 Commencer l’écoute</button>
+        <input id="fallbackInput" type="text" placeholder="Ou écrivez la phrase ici..."
+               style="display:none;margin-top:8px;width:100%;padding:6px;">
+        <p id="vocalFeedback"></p>
+      </div>
+
+      <div class="challenge-buttons">
+        <button id="validateBtn" class="btn-main">Valider</button>
+        <button id="closeBtn" class="btn-secondary">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Notifications et overlay -->
+  <div id="notification" class="notification hidden"></div>
+  <div id="overlayContainer"></div>
+
+  <!-- =========================================================
+       🔹 Initialisation Firebase et Aventure
+       ========================================================= -->
+  <script type="module" src="./js/firebase-config.js"></script>
+
+  <!-- 🧭 Gestion de l’ID d’aventure -->
+  <script type="module">
+    import { setCurrentAdventureId, getCurrentAdventureId } from "./js/firebase-config.js";
+
+    const idFromUrl = new URLSearchParams(location.search).get("id");
+    const stored = getCurrentAdventureId();
+    const chosenId = idFromUrl || stored;
+
+    if (chosenId) {
+      setCurrentAdventureId(chosenId);
+      console.log("🎯 Aventure active :", chosenId);
+    } else {
+      console.warn("⚠️ Aucun ID d’aventure trouvé → retour à l’accueil");
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <!-- 🔄 Chargement de la configuration d’aventure -->
+  <script type="module">
+    import { loadAdventureConfig } from "./js/adventure-loader.js";
+    loadAdventureConfig();
+  </script>
+
+  <!-- =========================================================
+       🔹 Scripts principaux du jeu
+       ========================================================= -->
+  <script type="module" src="./js/map-init.js"></script>
+  <script type="module" src="./js/poi-manager.js"></script>
+  <script type="module" src="./js/challenge-manager.js"></script>
+  <script type="module" src="./js/score-manager.js"></script>
+  <script type="module" src="./js/main.js"></script>
+  <!-- 🔹 Nouveau module dédié à l’affichage des défis -->
+  <script type="module" src="./js/challenge-view.js"></script>
+
+  <!-- =========================================================
+       🔹 Gestion de la progression et des interactions
+       ========================================================= -->
+  <script type="module">
+    import { app } from "./js/firebase-config.js";
+    import {
+      getFirestore, doc, setDoc, getDoc, updateDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { closeChallenge } from "./js/challenge-manager.js";
+
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // ✅ Boutons modale (fallback ancien système)
+    window.addEventListener("DOMContentLoaded", () => {
+      const validateBtn = document.getElementById("validateBtn");
+      const closeBtn = document.getElementById("closeBtn");
+      if (validateBtn) validateBtn.addEventListener("click", () => validateAnswer());
+      if (closeBtn) closeBtn.addEventListener("click", () => closeChallenge());
+    });
+
+    /**
+     * 🔹 Met à jour la progression du joueur
+     */
+    export async function updatePlayerProgress(aventure, totalPois, currentPoiIndex) {
+      const user = auth.currentUser;
+      if (!user || !aventure) return;
+
+      const progressRef = doc(db, "progress", `${user.uid}_${aventure.id}`);
+      const progressSnap = await getDoc(progressRef);
+      const now = serverTimestamp();
+
+      if (!progressSnap.exists()) {
+        await setDoc(progressRef, {
+          userId: user.uid,
+          aventureId: aventure.id,
+          nomAventure: aventure.nom,
+          ville: aventure.ville,
+          totalPOI: totalPois,
+          poiCompleted: 1,
+          status: "in_progress",
+          startedAt: now,
+          lastUpdate: now,
+          completedAt: null,
+        });
+        console.log(`[PROGRESS] 🆕 Suivi créé pour ${aventure.nom}`);
+      } else {
+        const data = progressSnap.data();
+        const poiDone = Math.min(data.poiCompleted + 1, totalPois);
+        let newStatus = "in_progress";
+        let completedAt = data.completedAt;
+
+        if (poiDone >= totalPois) {
+          newStatus = "completed";
+          completedAt = now;
+        }
+
+        const fin = aventure.dispoFin?.toDate?.() || null;
+        if (fin && new Date() > fin) {
+          newStatus = "completed";
+          completedAt = now;
+        }
+
+        await updateDoc(progressRef, {
+          poiCompleted: poiDone,
+          lastUpdate: now,
+          status: newStatus,
+          completedAt,
+        });
+
+        console.log(`[PROGRESS] 🔄 POI validé (${poiDone}/${totalPois}) → statut : ${newStatus}`);
+      }
+    }
+
+    // =========================================================
+    // 🚪 Quitter une aventure
+    // =========================================================
+    const quitButton = document.getElementById("quitButton");
+    if (quitButton) {
+      quitButton.addEventListener("click", () => {
+        if (confirm("Voulez-vous vraiment quitter cette aventure ? Votre progression sera sauvegardée.")) {
+          window.location.href = "index.html";
+        }
+      });
+    }
+
+    // =========================================================
+    // 🎯 Affichage du prénom et du titre d’aventure
+    // =========================================================
+    window.addEventListener("DOMContentLoaded", () => {
+      const firstName = localStorage.getItem("firstName") || "joueur";
+      const nameEl = document.getElementById("playerName");
+      if (nameEl) nameEl.textContent = firstName;
+
+      const titleEl = document.getElementById("aventureTitle");
+      const checkConfig = setInterval(() => {
+        if (window.aventureConfig && window.aventureConfig.nom) {
+          titleEl.textContent = window.aventureConfig.nom;
+          clearInterval(checkConfig);
+        }
+      }, 300);
+    });
+  </script>
+</body>
+</html>

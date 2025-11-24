@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Créer un compte</title>
+  <link rel="stylesheet" href="style-front.css" />
+</head>
+<body class="auth-page">
+
+  <main class="auth-container">
+    <h1>🆕 Créez votre compte</h1>
+    <p class="subtitle">Rejoignez l’aventure et commencez à jouer</p>
+
+    <form id="signupForm" class="auth-form">
+      <input type="email" id="email" placeholder="Adresse e-mail" required />
+      <input type="password" id="password" placeholder="Mot de passe (min. 6 caractères)" required />
+      <button type="submit" class="btn btn-login">Créer mon compte</button>
+    </form>
+
+    <div class="divider">ou</div>
+
+    <button id="googleBtn" class="btn btn-google">🔗 S’inscrire avec Google</button>
+
+    <p class="switch-auth">
+      Déjà un compte ? <a href="identification.html">Se connecter</a>
+    </p>
+
+    <p class="back-link">
+      <a href="landing.html">⬅ Retour à l’accueil</a>
+    </p>
+  </main>
+
+  <script type="module">
+    import { app } from "./js/firebase-config.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      GoogleAuthProvider,
+      signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const auth = getAuth(app);
+    const form = document.getElementById("signupForm");
+    const googleBtn = document.getElementById("googleBtn");
+
+    // --- Création par e-mail ---
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = form.email.value.trim();
+      const password = form.password.value.trim();
+
+      if (password.length < 6) {
+        alert("Le mot de passe doit contenir au moins 6 caractères.");
+        return;
+      }
+
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert("✅ Compte créé avec succès !");
+        window.location.href = "joueur.html";
+      } catch (err) {
+        console.error(err);
+        alert("Erreur de création : " + err.message);
+      }
+    });
+
+    // --- Inscription avec Google ---
+    googleBtn.addEventListener("click", async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithPopup(auth, provider);
+        alert("✅ Inscription réussie avec Google !");
+        window.location.href = "joueur.html";
+      } catch (err) {
+        console.error(err);
+        alert("Erreur Google : " + err.message);
+      }
+    });
+  </script>
+</body>
+</html>

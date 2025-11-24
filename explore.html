@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌍 Explorer les aventures | PlayPulse</title>
+  <link rel="stylesheet" href="style-front.css" />
+
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, #f4f6fc, #e9ecf8);
+      margin: 0;
+      padding: 0;
+      color: #2b3a67;
+    }
+
+    header {
+      background: #2b3a67;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    main {
+      max-width: 950px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #2b3a67;
+    }
+
+    section {
+      margin-bottom: 2.5rem;
+    }
+
+    /* 🔎 Filtres */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    select, button {
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    button {
+      background: #2b3a67;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #3d4e8a;
+    }
+
+    /* 🗺️ Liste des aventures */
+    .aventures-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .aventure-card {
+      background: #f9faff;
+      border: 1px solid #e0e4f0;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-align: center;
+    }
+
+    .aventure-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .aventure-card h3 {
+      color: #2b3a67;
+      margin-top: 0;
+      font-size: 1.1rem;
+    }
+
+    .distance {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 0.2rem;
+    }
+
+    .btn-play {
+      display: inline-block;
+      margin-top: 0.8rem;
+      padding: 0.6rem 1.2rem;
+      background: #2b3a67;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .btn-play:hover {
+      background: #3f5396;
+      transform: translateY(-2px);
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #d0d6e0;
+      margin: 2rem 0;
+    }
+
+    .loading, .error {
+      text-align: center;
+      font-style: italic;
+      color: #555;
+      margin-top: 1rem;
+    }
+
+    .error {
+      color: #c0392b;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .back-btn {
+      background: #2b3a67;
+      color: white;
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-block;
+    }
+
+    @media (max-width: 600px) {
+      .filters {
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+
+      select, button {
+        width: 100%;
+      }
+
+      main {
+        margin: 1rem;
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🌍 Explorer toutes les aventures PlayPulse</h1>
+  </header>
+
+  <main>
+    <!-- SECTION : Recherche d’aventures publiques -->
+    <section>
+      <h2>🔎 Rechercher une aventure</h2>
+      <div class="filters">
+        <label>
+          Pays :
+          <select id="filterPays"><option value="">🌍 Tous les pays</option></select>
+        </label>
+        <label>
+          Ville :
+          <select id="filterVille"><option value="">🏙️ Toutes les villes</option></select>
+        </label>
+      </div>
+
+      <div id="aventuresContainer" class="aventures-list"></div>
+      <p id="message" class="loading"></p>
+    </section>
+
+    <footer>
+      <a href="index.html" class="back-btn">⬅ Retour à mon espace</a>
+    </footer>
+  </main>
+
+  <!-- ✅ Nouveau script centralisé -->
+  <script type="module" src="./js/choix-aventure.js"></script>
+</body>
+</html>

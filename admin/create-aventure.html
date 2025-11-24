@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlayPulse | Création d’une aventure</title>
+  <link rel="stylesheet" href="/admin/style-admin.css" />
+</head>
+
+<body>
+  <!-- Sécurité admin -->
+  <script type="module" src="./js/admin-protect.js"></script>
+
+  <!-- Bandeau principal -->
+  <div class="topbar">
+    <h1>PlayPulse</h1>
+    <small>Interface d’administration</small>
+  </div>
+
+  <!-- En-tête -->
+  <header class="admin-header">
+    <h2>🆕 Création d’une aventure</h2>
+    <a href="admin.html">⬅ Retour</a>
+  </header>
+
+  <!-- Contenu principal -->
+  <main class="admin-form">
+    <form id="createForm">
+      <h2>Informations générales</h2>
+
+      <label for="pays">Pays</label>
+      <input type="text" id="pays" name="pays" required />
+
+      <label for="ville">Ville</label>
+      <input type="text" id="ville" name="ville" required />
+
+      <label for="nom">Nom de l’aventure</label>
+      <input type="text" id="nom" name="nom" required />
+
+      <label>Type de parcours</label>
+      <div class="radio-group" id="lineaireGroup">
+        <label><input type="radio" name="lineaire" value="true"> Linéaire</label>
+        <label><input type="radio" name="lineaire" value="false" checked> Libre</label>
+      </div>
+
+      <!-- 🆕 Bannière informative -->
+      <div id="lineaireBanner" class="lineaire-banner" style="display:none;">
+        ⚠️ Le mode <strong>linéaire</strong> est activé : pensez à définir un ordre pour chaque point d’intérêt.
+      </div>
+
+      <label>Visibilité</label>
+      <div class="radio-group" id="publicGroup">
+        <label><input type="radio" name="public" value="true"> Publique</label>
+        <label><input type="radio" name="public" value="false" checked> Privée</label>
+      </div>
+
+      <label for="dispoDebut">Disponible à partir de</label>
+      <input type="datetime-local" id="dispoDebut" name="dispoDebut" />
+
+      <label for="dispoFin">Disponible jusqu’à</label>
+      <input type="datetime-local" id="dispoFin" name="dispoFin" />
+
+      <hr />
+      <h2>Points d’intérêt (POI)</h2>
+      <div id="poiContainer"></div>
+
+      <button type="button" id="addPoiBtn">➕ Ajouter un POI</button>
+
+      <hr />
+      <button type="submit" id="saveBtn">💾 Créer l’aventure</button>
+    </form>
+  </main>
+
+  <script type="module" src="./js/create-aventure.js"></script>
+</body>
+</html>

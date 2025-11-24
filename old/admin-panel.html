@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Gestion des aventures</title>
+  <link rel="stylesheet" href="style-admin.css" />
+</head>
+<body>
+  <div class="admin-container">
+    <h1>🎛️ Panneau d'administration</h1>
+
+    <button id="createAventureBtn">➕ Créer une nouvelle aventure</button>
+
+    <h2>📚 Aventures existantes :</h2>
+    <ul id="aventureList"></ul>
+  </div>
+
+  <!-- Firebase et JS -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs,
+      deleteDoc, doc, getDoc, setDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB7e3Fk1Sc8S9ykq1v3xVktS5UOUDBfaaM",
+      authDomain: "coup-de-poker-ccd99.firebaseapp.com",
+      projectId: "coup-de-poker-ccd99",
+      storageBucket: "coup-de-poker-ccd99.appspot.com",
+      messagingSenderId: "464219267705",
+      appId: "1:464219267705:web:b39a36857091a0c0392aa8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const list = document.getElementById("aventureList");
+
+    async function fetchAventures() {
+      const colRef = collection(db, "aventures");
+      const snapshot = await getDocs(colRef);
+
+      list.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const li = document.createElement("li");
+
+        const statut = data.public ? "🌍 Public" : "🔒 Privé";
+        const lineaire = data.lineaire ? "🚶 Linéaire" : "🔁 Libre";
+
+        li.innerHTML = `
+          <strong>${data.nom || docSnap.id}</strong>
+          (${data.ville || "Ville inconnue"}, ${data.pays || "Pays inconnu"})
+          - ${statut} | ${lineaire}
+          <button class="test" data-id="${docSnap.id}">▶️ Tester</button>
+          <button class="edit" data-id="${docSnap.id}">✏️ Modifier</button>
+          <button class="duplicate" data-id="${docSnap.id}">📄 Dupliquer</button>
+          <button class="delete" data-id="${docSnap.id}">🗑️ Supprimer</button>
+        `;
+
+        list.appendChild(li);
+      });
+    }
+
+    fetchAventures();
+
+    document.getElementById("createAventureBtn").addEventListener("click", () => {
+      window.location.href = "create-aventure.html";
+    });
+
+    list.addEventListener("click", async (e) => {
+      const id = e.target.dataset.id;
+
+      if (e.target.classList.contains("delete")) {
+        const confirmed = confirm("❗ Cette opération est irréversible. Supprimer cette aventure ?");
+        if (!confirmed) return;
+
+        await deleteDoc(doc(db, "aventures", id));
+        alert("✅ Aventure supprimée.");
+        fetchAventures();
+      }
+
+      if (e.target.classList.contains("edit")) {
+        localStorage.setItem("editAventureId", id);
+        window.location.href = "edit-aventure.html";
+      }
+
+      if (e.target.classList.contains("test")) {
+        localStorage.setItem("current_aventure_id", id);
+        window.open("../index.html", "_blank");
+      }
+
+      if (e.target.classList.contains("duplicate")) {
+        const ref = doc(db, "aventures", id);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) return alert("❌ Aventure introuvable");
+
+        const data = snap.data();
+        const newId = id + "-copy-" + Date.now();
+
+        await setDoc(doc(db, "aventures", newId), {
+          ...data,
+          nom: data.nom + " (copie)",
+        });
+
+        alert("✅ Aventure dupliquée !");
+        fetchAventures();
+      }
+    });
+  </script>
+</body>
+</html>

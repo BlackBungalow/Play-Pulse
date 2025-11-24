@@ -1,0 +1,84 @@
+/* =========================================================
+   ⚡ POPUP FEEDBACK — visible au-dessus de tout
+   ========================================================= */
+
+.floating-popup {
+  position: fixed;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 99999 !important; /* ✅ priorité absolue */
+  pointer-events: none; /* ✅ clics passent à travers */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+}
+
+/* ✅ Variantes de couleur */
+.floating-popup.success {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.floating-popup.fail {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+}
+
+.floating-popup.warning {
+  background: linear-gradient(135deg, #f59e0b, #b45309);
+}
+
+/* ✅ Effet d'apparition */
+.floating-popup.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  animation: popup-bounce 0.35s ease-out;
+}
+
+/* ✅ Animation rebond */
+@keyframes popup-bounce {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* ✅ Animation "shake" (échec uniquement) */
+@keyframes shake {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  20%, 60% {
+    transform: translate(calc(-50% - 6px), -50%) scale(1);
+  }
+  40%, 80% {
+    transform: translate(calc(-50% + 6px), -50%) scale(1);
+  }
+}
+.floating-popup.fail.visible {
+  animation: shake 0.35s ease-in-out, popup-bounce 0.3s ease-out;
+}
+
+/* ✅ Mobile */
+@media (max-width: 480px) {
+  .floating-popup {
+    top: 45%;
+    width: 85%;
+    font-size: 1rem;
+    padding: 10px 16px;
+  }
+}

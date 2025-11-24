@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion - Mission CityCrunch</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .login-box {
+      background-color: #111;
+      padding: 40px;
+      border-radius: 12px;
+      text-align: center;
+      width: 100%;
+      max-width: 350px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    .login-box h1 {
+      color: #fff;
+      margin-bottom: 20px;
+      font-size: 24px;
+      letter-spacing: 1px;
+    }
+
+    .login-box label {
+      color: #ccc;
+      font-size: 14px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+      margin-bottom: 20px;
+      background-color: #222;
+      color: white;
+      outline: none;
+    }
+
+    .login-box input::placeholder {
+      color: #666;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .login-box button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <h1>Mission CityCrunch</h1>
+    <label for="pseudoInput">Entrez votre pseudo :</label>
+    <input type="text" id="pseudoInput" placeholder="Votre pseudo" />
+    <button id="startBtn">Commencer</button>
+  </div>
+
+  <script type="module">
+    document.getElementById("startBtn").addEventListener("click", () => {
+      const pseudo = document.getElementById("pseudoInput").value.trim();
+      if (!pseudo) {
+        alert("Veuillez entrer un pseudo.");
+        return;
+      }
+
+      // Sauvegarde le pseudo pour l'aventure
+      localStorage.setItem("pseudo", pseudo);
+
+      // Redirige vers le jeu
+      window.location.href = "index.html";
+    });
+  </script>
+
+</body>
+</html>

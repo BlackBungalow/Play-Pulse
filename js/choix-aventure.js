@@ -27,7 +27,7 @@ const db = getFirestore(app);
 const container = document.getElementById("aventuresContainer");
 const paysFilter = document.getElementById("filterPays");
 const villeFilter = document.getElementById("filterVille");
-const statusMsg = document.getElementById("statusMsg");
+const statusMsg = document.getElementById("statusMsg") || document.getElementById("message");
 const currentPage = window.location.pathname.split("/").pop();
 
 let allAventures = [];
@@ -195,11 +195,22 @@ function displayAventures(aventures) {
     card.style.transform = "translateY(10px)";
     card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
 
+    const thumb = av.illustrationUrl
+      ? `<img src="${av.illustrationUrl}" alt="Illustration ${av.nom || "aventure"}" class="aventure-thumb" loading="lazy" />`
+      : `<div class="aventure-thumb thumb-placeholder">🏝️</div>`;
+    const presentation = av.presentation || "Pas encore de présentation fournie.";
+
     card.innerHTML = `
-      <h2>${av.nom || "Sans titre"}</h2>
-      <p>📍 ${av.ville || "Ville inconnue"}, ${av.pays || "Pays inconnu"}</p>
-      ${av.distance != null ? `<p>📏 ~${av.distance} km</p>` : ""}
-      <p>🎮 Mode : ${av.lineaire ? "Parcours linéaire" : "Libre"}</p>
+      <div class="aventure-card-header">
+        ${thumb}
+        <div class="aventure-card-title">
+          <h2>${av.nom || "Sans titre"}</h2>
+          <p class="aventure-location">📍 ${av.ville || "Ville inconnue"}, ${av.pays || "Pays inconnu"}</p>
+          ${av.distance != null ? `<p class=\"aventure-distance\">📏 ~${av.distance} km</p>` : ""}
+        </div>
+      </div>
+      <p class="aventure-presentation">${presentation}</p>
+      <p class="aventure-mode">🎮 Mode : ${av.lineaire ? "Parcours linéaire" : "Libre"}</p>
       <button onclick="launchAventure('${av.id}')">▶️ Jouer</button>
     `;
 

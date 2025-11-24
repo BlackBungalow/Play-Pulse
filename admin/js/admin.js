@@ -160,13 +160,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           const createdAt = formatDate(aventure.createdAt);
           const updatedAt = formatDate(aventure.updatedAt);
+          const presentation = aventure.presentation || "Aucune présentation renseignée.";
+          const illustrationThumb = aventure.illustrationUrl
+            ? `<img src="${aventure.illustrationUrl}" alt="Illustration ${aventure.nom || "aventure"}" class="aventure-thumb" loading="lazy" />`
+            : `<div class="aventure-thumb thumb-placeholder">🏝️</div>`;
 
           card.innerHTML = `
             <div class="aventure-header">
-              <h3>🏝️ ${aventure.nom || "(Sans titre)"}</h3>
-              <span class="tag ${aventure.public ? "public" : "prive"}">${aventure.public ? "Public" : "Privé"}</span>
-              <span class="tag ${aventure.lineaire ? "lineaire" : "libre"}">${aventure.lineaire ? "Linéaire" : "Libre"}</span>
-              <span class="tag poi">${aventure.poiCount || 0} POI</span>
+              ${illustrationThumb}
+              <div class="aventure-title-block">
+                <h3>🏝️ ${aventure.nom || "(Sans titre)"}</h3>
+                <div class="tag-row">
+                  <span class="tag ${aventure.public ? "public" : "prive"}">${aventure.public ? "Public" : "Privé"}</span>
+                  <span class="tag ${aventure.lineaire ? "lineaire" : "libre"}">${aventure.lineaire ? "Linéaire" : "Libre"}</span>
+                  <span class="tag poi">${aventure.poiCount || 0} POI</span>
+                </div>
+              </div>
             </div>
 
             <div class="aventure-meta">
@@ -174,6 +183,8 @@ document.addEventListener("DOMContentLoaded", async () => {
               <small>🕒 Créée : ${createdAt}</small> |
               <small>✏️ Modifiée : ${updatedAt}</small>
             </div>
+
+            <p class="aventure-presentation">${presentation}</p>
 
             <div class="aventure-actions">
               <button class="btn btn-edit edit-btn" data-id="${aventure.id}">✏️ Modifier</button>

@@ -161,6 +161,77 @@
       background: var(--accent);
     }
 
+    /* Partage / invitations */
+    .aventure-actions-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.8rem;
+    }
+
+    .share-block {
+      background: #eef2f8;
+      border: 1px solid #d9deea;
+      border-radius: 10px;
+      padding: 0.75rem;
+    }
+
+    .share-toggle {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--primary);
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .share-toggle:hover { text-decoration: underline; }
+
+    .share-panel {
+      margin-top: 0.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .share-label { font-weight: 600; color: #1f2d5a; }
+
+    .share-input-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .share-email-input {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #c7cede;
+      font-size: 0.95rem;
+    }
+
+    .share-send {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 0.9rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+
+    .share-send:hover { background: var(--accent); }
+
+    .share-status { margin: 0; font-size: 0.9rem; color: #2b3a67; }
+    .share-status.error { color: var(--danger); }
+    .share-status.success { color: #1f8b4c; }
+
     .loading, .error {
       text-align: center;
       margin-top: 1rem;

@@ -214,20 +214,10 @@ function displayAventures(aventures) {
       <p class="aventure-mode">🎮 Mode : ${av.lineaire ? "Parcours linéaire" : "Libre"}</p>
       <div class="aventure-actions-row">
         <button class="btn-play" onclick="launchAventure('${av.id}')">▶️ Jouer</button>
-        <div class="share-block">
-          <button class="share-toggle" type="button">📨 Partager cette aventure avec mes amis</button>
-          <div class="share-panel" hidden>
-            <label class="share-label" for="share-${av.id}">Adresse email de votre ami</label>
-            <div class="share-input-row">
-              <input id="share-${av.id}" class="share-email-input" type="email" placeholder="ami@example.com" autocomplete="email" />
-              <button class="share-send" type="button">Envoyer</button>
-            </div>
-            <p class="share-status" aria-live="polite"></p>
-          </div>
-        </div>
       </div>
     `;
 
+    ensureShareBlock(card, av);
     container.appendChild(card);
 
     setupShareInteractions(card, av);
@@ -295,6 +285,32 @@ function setupShareInteractions(card, aventure) {
       handleInvitationSend({ aventure, emailInput, statusEl, sendBtn });
     }
   });
+}
+
+function ensureShareBlock(card, aventure) {
+  const actionsRow = card.querySelector(".aventure-actions-row") || (() => {
+    const row = document.createElement("div");
+    row.className = "aventure-actions-row";
+    card.appendChild(row);
+    return row;
+  })();
+
+  if (!actionsRow.querySelector(".share-block")) {
+    const shareBlock = document.createElement("div");
+    shareBlock.className = "share-block";
+    shareBlock.innerHTML = `
+      <button class="share-toggle" type="button">📨 Partager cette aventure avec mes amis</button>
+      <div class="share-panel" hidden>
+        <label class="share-label" for="share-${aventure.id}">Adresse email de votre ami</label>
+        <div class="share-input-row">
+          <input id="share-${aventure.id}" class="share-email-input" type="email" placeholder="ami@example.com" autocomplete="email" />
+          <button class="share-send" type="button">Envoyer</button>
+        </div>
+        <p class="share-status" aria-live="polite"></p>
+      </div>
+    `;
+    actionsRow.appendChild(shareBlock);
+  }
 }
 
 async function handleInvitationSend({ aventure, emailInput, statusEl, sendBtn }) {

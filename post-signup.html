@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -155,7 +156,7 @@
       }
 
       try {
-        await setDoc(doc(db, "users", currentUser.uid), {
+        await setDoc(doc(db, "players", currentUser.uid), {
           firstName,
           lastName,
           birthDate,
@@ -168,7 +169,7 @@
         errorMessage.classList.add("hidden");
 
         setTimeout(() => {
-          window.location.href = "index.html";
+          window.location.href = "joueur.html";
         }, 1200);
       } catch (err) {
         console.error(err);
@@ -178,4 +179,5 @@
     });
   </script>
 </body>
+
 </html>

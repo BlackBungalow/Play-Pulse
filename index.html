@@ -1,275 +1,105 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PlayPulse — Espace Joueur</title>
-  <link rel="stylesheet" href="style-front.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PlayPulse - L'aventure urbaine commence ici</title>
+    <link rel="stylesheet" href="style-front.css" />
+    <style>
+        /* Spécifique Landing Page */
+        .landing-hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
 
-  <!-- 🗺️ Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        .landing-hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(180deg, #f6f9ff, #dfe8fa);
-      color: #2b3a67;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      overflow-x: hidden;
-      -webkit-tap-highlight-color: transparent;
-    }
+        .landing-hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            line-height: 1.6;
+        }
 
-    header { text-align: center; margin-top: 2.2rem; animation: fadeInDown 0.8s ease-out; }
-    header h1 { font-size: 2rem; color: #2b3a67; margin-bottom: 0.3rem; font-weight: 700; }
-    #welcomeName { color: #3b82f6; font-weight: 600; }
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
 
-    main {
-      margin-top: 2rem;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.1rem;
-      animation: fadeIn 1.2s ease-in;
-      width: 90%;
-      max-width: 480px;
-    }
+        .btn-hero {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 1rem 1.4rem;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 600;
-      color: white;
-      text-decoration: none;
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
-      transition: all 0.25s ease;
-      position: relative;
-    }
+        .btn-primary {
+            background: #ffcd4b;
+            color: #111;
+        }
 
-    .btn.pulse::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 100%;
-      height: 100%;
-      border-radius: 12px;
-      transform: translate(-50%, -50%);
-      background: radial-gradient(circle, rgba(255,205,75,0.4) 0%, transparent 70%);
-      animation: pulse 2s infinite ease-in-out;
-      z-index: -1;
-    }
+        .btn-primary:hover {
+            background: #ffdc73;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 205, 75, 0.3);
+        }
 
-    @keyframes pulse {
-      0% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
-      50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.2; }
-      100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
-    }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+        }
 
-    .btn.disabled { opacity: 0; visibility: hidden; pointer-events: none; }
-
-    .no-aventure-msg {
-      color: #64748b;
-      font-style: italic;
-      font-size: 0.95rem;
-      margin-top: 0.3rem;
-      display: none;
-      animation: fadeIn 0.8s ease;
-    }
-
-    #aventuresStats { font-size: 1rem; margin-bottom: 0.8rem; color: #1e293b; line-height: 1.4; }
-    #map { width: 100%; height: 260px; border-radius: 12px; margin-top: 0.5rem; display: none;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.15); animation: fadeIn 1s ease; }
-
-    #mapHint {
-      display: none; position: absolute; top: 15px; right: 15px;
-      background: rgba(255, 255, 255, 0.95); color: #1e293b;
-      padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.9rem;
-      font-weight: 500; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      animation: fadeInHint 1.5s ease; z-index: 9999;
-    }
-
-    .logout-btn {
-      margin-top: 1.2rem; background: #ef4444; color: white;
-      padding: 0.7rem 1.1rem; border: none; border-radius: 10px;
-      font-size: 0.95rem; font-weight: 600; cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    footer { margin-top: auto; padding: 1rem; text-align: center; color: #475569;
-      font-size: 0.85rem; opacity: 0.7; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeInHint { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-  </style>
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+    </style>
 </head>
 
+<script>
+    // 🔄 REDIRECTION INTELLIGENTE (Compatibilité QR Codes V1)
+    // Si l'URL contient ?id=..., c'est un lancement de jeu -> redirection vers game.html
+    const urlParams = new URLSearchParams(window.location.search);
+    const adventureId = urlParams.get('id');
+
+    if (adventureId) {
+        console.log("🔄 Redirection vers le jeu pour l'aventure :", adventureId);
+        window.location.href = `game.html?id=${adventureId}`;
+    }
+</script>
+
 <body>
-  <header>
-    <h1>PlayPulse</h1>
-    <p>Bienvenue, <span id="welcomeName">joueur</span> 👋</p>
-  </header>
 
-  <main>
-    <p id="aventuresStats">Chargement des aventures...</p>
-    <p id="noNearbyMsg" class="no-aventure-msg">🌍 Nos aventures arrivent bientôt dans votre zone !</p>
+    <header class="landing-hero">
+        <h1>PlayPulse</h1>
+        <p>Redécouvrez votre ville. Résolvez des énigmes géolocalisées. Vivez une aventure immersive unique.</p>
 
-    <div id="map"></div>
-    <div id="mapHint">💡 Touchez une icône pour voir les aventures proches !</div>
+        <div class="hero-buttons">
+            <a href="identification.html" class="btn btn-hero btn-primary">Jouer maintenant</a>
+            <a href="signup.html" class="btn btn-hero btn-outline">Créer un compte</a>
+        </div>
+    </header>
 
-    <a id="btnProximite" href="catalogue-proximite.html" class="btn">Commencer une aventure près de moi</a>
-    <a href="explore.html" class="btn">Explorer toutes les aventures</a>
-    <a id="btnHistorique" href="historique.html" class="btn" style="display:none;">Mes aventures en cours</a>
-
-    <button id="logoutButton" class="logout-btn">🚪 Se déconnecter</button>
-  </main>
-
-  <footer>© 2025 — PlayPulse. Tous droits réservés.</footer>
-
-  <script type="module">
-    import { app } from "./js/firebase-config.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    const welcomeName = document.getElementById("welcomeName");
-    const logoutButton = document.getElementById("logoutButton");
-    const btnProximite = document.getElementById("btnProximite");
-    const aventuresStats = document.getElementById("aventuresStats");
-    const noNearbyMsg = document.getElementById("noNearbyMsg");
-    const btnHistorique = document.getElementById("btnHistorique");
-    const mapContainer = document.getElementById("map");
-    const mapHint = document.getElementById("mapHint");
-    const RAYON_KM = 5;
-
-    const localName = localStorage.getItem("firstName");
-    if (localName) welcomeName.textContent = localName;
-
-    // ===========================================================
-    // 🔐 Auth + affichage conditionnel de l'historique
-    // ===========================================================
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return window.location.href = "identification.html";
-
-      try {
-        const q = query(collection(db, "progress"), where("userId", "==", user.uid));
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          const nbAventures = snapshot.size;
-          btnHistorique.style.display = "block";
-          btnHistorique.textContent = `📜 Mes aventures en cours (${nbAventures})`;
-        }
-      } catch (err) {
-        console.warn("Erreur chargement historique :", err);
-      }
-    });
-
-    logoutButton.addEventListener("click", async () => {
-      await signOut(auth);
-      localStorage.clear();
-      window.location.href = "identification.html";
-    });
-
-    function getDistanceKm(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat / 2) ** 2 +
-                Math.cos(lat1 * Math.PI / 180) *
-                Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) ** 2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
-
-    async function initDashboard() {
-      aventuresStats.textContent = "⏳ Chargement...";
-      const q = query(collection(db, "aventures"), where("public", "==", true));
-      const snap = await getDocs(q);
-      const totalCount = snap.size;
-
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        const user = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        let nearby = [];
-
-        for (const docSnap of snap.docs) {
-          const data = docSnap.data();
-          const poisSnap = await getDocs(collection(db, "aventures", docSnap.id, "pois"));
-          let firstPOI = null;
-          poisSnap.forEach(p => {
-            const poiData = p.data();
-            if (!firstPOI && poiData.lat && poiData.lng) {
-              firstPOI = { lat: parseFloat(poiData.lat), lng: parseFloat(poiData.lng) };
-            }
-          });
-          if (!firstPOI) continue;
-
-          const dist = getDistanceKm(user.lat, user.lng, firstPOI.lat, firstPOI.lng);
-          if (dist <= RAYON_KM) nearby.push({ id: docSnap.id, nom: data.nom || "Aventure", dist, poi: firstPOI });
-        }
-
-        const nearbyCount = nearby.length;
-        aventuresStats.innerHTML = `
-          <span>${totalCount} aventure${totalCount > 1 ? "s" : ""} au total.</span><br>
-          <span style="font-size:1.2rem;color:#2563eb;">
-            ${
-              nearbyCount > 0
-                ? `✨ ${nearbyCount} aventure${nearbyCount > 1 ? "s" : ""} à moins de ${RAYON_KM} km !`
-                : "😕 Aucune aventure à proximité pour le moment."
-            }
-          </span>
-        `;
-
-        if (nearbyCount > 0) {
-          btnProximite.textContent = `Commencer une des ${nearbyCount} aventure${nearbyCount > 1 ? "s" : ""} près de moi`;
-          btnProximite.classList.add("pulse");
-          mapContainer.style.display = "block";
-          mapHint.style.display = "block";
-
-          const map = L.map("map", { zoomControl: false }).setView([user.lat, user.lng], 14);
-          L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-            attribution: "© OpenStreetMap & Carto", maxZoom: 18
-          }).addTo(map);
-
-          const userIcon = L.icon({
-            iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-            iconSize: [28, 28], iconAnchor: [14, 28],
-          });
-
-          L.marker([user.lat, user.lng], { icon: userIcon })
-            .addTo(map)
-            .bindPopup("📍 Vous êtes ici")
-            .openPopup();
-
-          nearby.forEach(a => {
-            const marker = L.circleMarker([a.poi.lat, a.poi.lng], {
-              radius: 8, color: "#f59e0b", fillColor: "#fbbf24", fillOpacity: 0.9
-            }).addTo(map);
-            marker.bindPopup(`<b>${a.nom}</b><br>📏 ${a.dist.toFixed(1)} km`);
-          });
-
-          setTimeout(() => { mapHint.style.display = "none"; }, 6000);
-        } else {
-          btnProximite.classList.add("disabled");
-          noNearbyMsg.style.display = "block";
-          mapContainer.style.display = "none";
-          mapHint.style.display = "none";
-        }
-      });
-    }
-
-    initDashboard();
-  </script>
 </body>
+
 </html>

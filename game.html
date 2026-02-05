@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,7 +22,7 @@
        🔐 Vérification d’authentification
        ========================================================= -->
   <script type="module">
-    import { getAuth, onAuthStateChanged } 
+    import { getAuth, onAuthStateChanged }
       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { app } from "./js/firebase-config.js";
 
@@ -49,8 +50,7 @@
   </header>
 
   <!-- ✅ Informations aventure -->
-  <div id="aventureInfo"
-       style="padding: 0.6rem 1rem; background: rgba(0,0,0,0.6); z-index: 2;">
+  <div id="aventureInfo" style="padding: 0.6rem 1rem; background: rgba(0,0,0,0.6); z-index: 2;">
   </div>
 
   <!-- ✅ Carte -->
@@ -75,7 +75,7 @@
         <p>🎤 Dites la phrase demandée</p>
         <button id="btnVocal">🎧 Commencer l’écoute</button>
         <input id="fallbackInput" type="text" placeholder="Ou écrivez la phrase ici..."
-               style="display:none;margin-top:8px;width:100%;padding:6px;">
+          style="display:none;margin-top:8px;width:100%;padding:6px;">
         <p id="vocalFeedback"></p>
       </div>
 
@@ -108,7 +108,7 @@
       console.log("🎯 Aventure active :", chosenId);
     } else {
       console.warn("⚠️ Aucun ID d’aventure trouvé → retour à l’accueil");
-      window.location.href = "index.html";
+      window.location.href = "joueur.html";
     }
   </script>
 
@@ -211,7 +211,7 @@
     if (quitButton) {
       quitButton.addEventListener("click", () => {
         if (confirm("Voulez-vous vraiment quitter cette aventure ? Votre progression sera sauvegardée.")) {
-          window.location.href = "index.html";
+          window.location.href = "joueur.html";
         }
       });
     }
@@ -234,4 +234,5 @@
     });
   </script>
 </body>
+
 </html>

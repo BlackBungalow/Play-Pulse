@@ -146,7 +146,11 @@ async function validateChallenge(poi, response, options = {}) {
 
   if (!user) return alert("Connecte-toi pour jouer !");
   const mode = (window.aventureConfig?.lineaire ? "lineaire" : "libre") || "libre";
-  const poiScore = Number(poi.score || 10);
+  const baseScore = Number(poi.score || 10);
+  let poiScore = baseScore;
+
+  if (options.hintsUsed === 1) poiScore = Math.ceil(baseScore * 0.9); // -10%
+  if (options.hintsUsed === 2) poiScore = Math.ceil(baseScore * 0.8); // -20%
 
   const expected = (poi.reponse || "").trim().toLowerCase();
   const type = poi.typeReponse || "texte";

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -31,7 +32,8 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
-    h1, h2 {
+    h1,
+    h2 {
       text-align: center;
       color: #2b3a67;
     }
@@ -55,7 +57,8 @@
       font-size: 0.95rem;
     }
 
-    select, button {
+    select,
+    button {
       padding: 0.6rem 1rem;
       border-radius: 8px;
       border: 1px solid #ccc;
@@ -176,7 +179,8 @@
       margin: 2rem 0;
     }
 
-    .loading, .error {
+    .loading,
+    .error {
       text-align: center;
       font-style: italic;
       color: #555;
@@ -208,7 +212,8 @@
         gap: 0.6rem;
       }
 
-      select, button {
+      select,
+      button {
         width: 100%;
       }
 
@@ -232,11 +237,15 @@
       <div class="filters">
         <label>
           Pays :
-          <select id="filterPays"><option value="">🌍 Tous les pays</option></select>
+          <select id="filterPays">
+            <option value="">🌍 Tous les pays</option>
+          </select>
         </label>
         <label>
           Ville :
-          <select id="filterVille"><option value="">🏙️ Toutes les villes</option></select>
+          <select id="filterVille">
+            <option value="">🏙️ Toutes les villes</option>
+          </select>
         </label>
       </div>
 
@@ -245,11 +254,12 @@
     </section>
 
     <footer>
-      <a href="index.html" class="back-btn">⬅ Retour à mon espace</a>
+      <a href="joueur.html" class="back-btn">⬅ Retour à mon espace</a>
     </footer>
   </main>
 
   <!-- ✅ Nouveau script centralisé -->
   <script type="module" src="./js/choix-aventure.js"></script>
 </body>
+
 </html>

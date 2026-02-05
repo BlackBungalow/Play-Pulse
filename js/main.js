@@ -30,7 +30,7 @@ async function loadAventureConfig() {
   const adventureId = getCurrentAdventureId();
   if (!adventureId) {
     console.warn("⚠️ Aucun ID d’aventure trouvé, retour à l’accueil.");
-    window.location.href = "index.html";
+    window.location.href = "joueur.html";
     return null;
   }
 
@@ -39,7 +39,7 @@ async function loadAventureConfig() {
 
   if (!snap.exists()) {
     console.error("❌ Aventure introuvable dans Firestore :", adventureId);
-    window.location.href = "index.html";
+    window.location.href = "joueur.html";
     return null;
   }
 
@@ -59,7 +59,7 @@ function confirmQuitAdventure() {
     confirmText: "Oui, quitter",
     cancelText: "Non, rester",
     onConfirm: () => {
-      window.location.href = "index.html";
+      window.location.href = "joueur.html";
     },
   });
 }

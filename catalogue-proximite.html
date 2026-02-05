@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -46,8 +47,15 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .aventures-list {
@@ -61,7 +69,7 @@
       border: 1px solid #ddd;
       border-radius: 12px;
       padding: 1rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       transition: all 0.2s ease;
       display: flex;
       flex-direction: column;
@@ -72,7 +80,7 @@
 
     .aventure-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
 
     .aventure-card h3 {
@@ -161,14 +169,20 @@
       background: var(--accent);
     }
 
-    .loading, .error {
+    .loading,
+    .error {
       text-align: center;
       margin-top: 1rem;
       font-style: italic;
     }
 
-    .loading { color: #555; }
-    .error { color: var(--danger); }
+    .loading {
+      color: #555;
+    }
+
+    .error {
+      color: var(--danger);
+    }
 
     footer {
       text-align: center;
@@ -190,9 +204,18 @@
     }
 
     @media (max-width: 600px) {
-      main { padding: 0.8rem; margin: 1rem; }
-      .aventure-card { padding: 0.9rem; }
-      header h1 { font-size: 1.1rem; }
+      main {
+        padding: 0.8rem;
+        margin: 1rem;
+      }
+
+      .aventure-card {
+        padding: 0.9rem;
+      }
+
+      header h1 {
+        font-size: 1.1rem;
+      }
     }
   </style>
 </head>
@@ -209,11 +232,12 @@
     <div id="aventuresContainer" class="aventures-list"></div>
 
     <footer>
-      <a href="index.html" class="back-btn">⬅ Retour à mon espace</a>
+      <a href="joueur.html" class="back-btn">⬅ Retour à mon espace</a>
     </footer>
   </main>
 
   <!-- ✅ Appel du script commun -->
   <script type="module" src="./js/choix-aventure.js"></script>
 </body>
+
 </html>

@@ -23,7 +23,7 @@ export async function loadAdventureConfig() {
 
   if (!aventureId || typeof aventureId !== "string" || aventureId.length < 5) {
     console.warn("⚠️ Aucun ID d’aventure valide détecté. Retour à l’accueil...");
-    window.location.href = "index.html";
+    window.location.href = "joueur.html";
     return null;
   }
 
@@ -35,7 +35,7 @@ export async function loadAdventureConfig() {
     if (!snap.exists()) {
       console.error("❌ Aventure introuvable dans Firestore :", aventureId);
       alert("Cette aventure n’existe pas ou a été supprimée.");
-      window.location.href = "index.html";
+      window.location.href = "joueur.html";
       return null;
     }
 
@@ -65,7 +65,7 @@ export async function loadAdventureConfig() {
       Période: `${formatDate(data.dispoDebut)} → ${formatDate(data.dispoFin)}`,
       Points: poisCount
     });
-   
+
 
     // =========================================================
     // 🎨 Mise à jour dynamique de l’interface

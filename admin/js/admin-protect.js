@@ -1,6 +1,6 @@
 // js/admin-protect.js
 import { app } from "/js/firebase-config.js";
-import { getAuth, onAuthStateChanged } 
+import { getAuth, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 /**
@@ -15,7 +15,8 @@ const authorizedEmails = [
   "ns@black-bungalow.com",
   "nfuchs@black-bungalow.com",
   "contact@black-bungalow.com",
-  "collaborateur@black-bungalow.com"
+  "collaborateur@black-bungalow.com",
+  "slimani.hocinechawki@gmail.com"
 ];
 
 // 🔐 Vérifie l'accès

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -20,7 +21,7 @@
   <!-- En-tête -->
   <header class="admin-header">
     <h2>🆕 Création d’une aventure</h2>
-    <a href="admin.html">⬅ Retour</a>
+    <a href="admin.html" id="backBtn">⬅ Retour</a>
   </header>
 
   <!-- Contenu principal -->
@@ -42,7 +43,8 @@
       <div id="illustrationPreview" class="mediaPreview"></div>
 
       <label for="presentation">Présentation de l’aventure</label>
-      <textarea id="presentation" name="presentation" rows="4" placeholder="Décris brièvement l’expérience proposée"></textarea>
+      <textarea id="presentation" name="presentation" rows="4"
+        placeholder="Décris brièvement l’expérience proposée"></textarea>
 
       <label>Type de parcours</label>
       <div class="radio-group" id="lineaireGroup">
@@ -80,4 +82,5 @@
 
   <script type="module" src="./js/create-aventure.js"></script>
 </body>
+
 </html>

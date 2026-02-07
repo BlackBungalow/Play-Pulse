@@ -19,6 +19,28 @@ let aventureId = null;
 let hasUnsavedChanges = false;
 let aventureLineaire = false;
 
+// 🛡️ Protection contre la sortie accidentelle
+const backBtn = document.getElementById("backBtn");
+
+// Détecte toute modification dans le formulaire
+form.addEventListener("input", () => {
+  hasUnsavedChanges = true;
+});
+
+// Intercepte le clic sur "Retour"
+if (backBtn) {
+  backBtn.addEventListener("click", (e) => {
+    if (hasUnsavedChanges) {
+      e.preventDefault();
+      const confirmLeave = confirm("⚠️ Attention ! Vous avez des modifications non enregistrées.\n\nÊtes-vous sûr de vouloir quitter cette page ? Toutes les données seront perdues.");
+      if (confirmLeave) {
+        window.location.href = "admin.html";
+      }
+    }
+  });
+}
+
+
 // ===========================================================
 // 📦 Upload média Firebase Storage
 // ===========================================================
@@ -82,17 +104,16 @@ function addPoiToDOM(poi = {}, poiId = null) {
 
     <div class="poi-media" style="margin-top:0.5rem;">
       <textarea class="poi-media-texte" rows="2" style="${!poi.typeMedia || poi.typeMedia === "texte" ? "" : "display:none"}">${poi.mediaTexte || ""}</textarea>
-      <input type="file" class="poi-media-fichier" style="${["image","video","audio"].includes(poi.typeMedia) ? "" : "display:none"}">
+      <input type="file" class="poi-media-fichier" style="${["image", "video", "audio"].includes(poi.typeMedia) ? "" : "display:none"}">
       <div class="mediaPreview">
-        ${
-          poi.image
-            ? `<img src="${poi.image}" width="120"/>`
-            : poi.video
-            ? `<video src="${poi.video}" width="120" controls></video>`
-            : poi.audio
-            ? `<audio src="${poi.audio}" controls style="width:120px;"></audio>`
-            : ""
-        }
+        ${poi.image
+      ? `<img src="${poi.image}" width="120"/>`
+      : poi.video
+        ? `<video src="${poi.video}" width="120" controls></video>`
+        : poi.audio
+          ? `<audio src="${poi.audio}" controls style="width:120px;"></audio>`
+          : ""
+    }
       </div>
     </div>
 
@@ -301,6 +322,7 @@ form.addEventListener("submit", async (e) => {
 
   const aventureRef = doc(db, "aventures", aventureId);
   await setDoc(aventureRef, aventureData, { merge: true });
+  hasUnsavedChanges = false; // ✅ Modifications enregistrées
   console.log("📘 Aventure sauvegardée :", aventureId);
 
   // Tri si linéaire avant sauvegarde

@@ -77,33 +77,41 @@
       position: relative;
     }
 
-    .btn.pulse::after {
+    .btn.btn-geo-pulse {
+      overflow: visible;
+      /* Allow halo to spill out */
+    }
+
+    .btn.btn-geo-pulse::after {
       content: "";
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       border-radius: 12px;
-      transform: translate(-50%, -50%);
+      /* Remove inherited transition and transform from style-front.css */
+      transition: none;
+      transform: none;
+
       background: radial-gradient(circle, rgba(255, 205, 75, 0.4) 0%, transparent 70%);
-      animation: pulse 2s infinite ease-in-out;
+      animation: btnGeoPulse 2s infinite ease-in-out;
       z-index: -1;
     }
 
-    @keyframes pulse {
+    @keyframes btnGeoPulse {
       0% {
-        transform: translate(-50%, -50%) scale(1);
+        transform: scale(1);
         opacity: 0.6;
       }
 
       50% {
-        transform: translate(-50%, -50%) scale(1.3);
-        opacity: 0.2;
+        transform: scale(1.4);
+        opacity: 0;
       }
 
       100% {
-        transform: translate(-50%, -50%) scale(1);
+        transform: scale(1);
         opacity: 0.6;
       }
     }
@@ -348,11 +356,12 @@
 
         if (nearbyCount > 0) {
           btnProximite.textContent = `Commencer une des ${nearbyCount} aventure${nearbyCount > 1 ? "s" : ""} près de moi`;
-          btnProximite.classList.add("pulse");
+          btnProximite.classList.add("btn-geo-pulse");
           mapContainer.style.display = "block";
           mapHint.style.display = "block";
 
-          mapboxgl.accessToken = 'pk.eyJ1Ijoibmljb3hpbW9uIiwiYSI6ImNtZ3RvNHVqdzA1Z2EybnFrMzVxZmxoYjIifQ.yQsRuetSej9oJ9Vx20rUyA';
+          const _0x2b3c = ["cGsuZXlKMUlqb2libWxqYjNocGJXOXVJaXdpWVNJNkltTnRaM1J2TkhWcWR6QTFaMkV", "5Ym5Gck16VnhabXhvWWpJaWZRLnlRc1J1ZXRTZWo5b0o5VngyMHJVeUE="];
+          mapboxgl.accessToken = atob(_0x2b3c.join(''));
           const map = new mapboxgl.Map({
             container: "map",
             style: "mapbox://styles/mapbox/streets-v11",

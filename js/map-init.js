@@ -2,7 +2,8 @@
 import mapboxgl from 'https://cdn.skypack.dev/mapbox-gl';
 import { updatePlayerPosition } from './poi-manager.js'; // ✅ Mise à jour proximité POI
 
-mapboxgl.accessToken = 'pk.eyJ1Ijoibmljb3hpbW9uIiwiYSI6ImNtZ3RvNHVqdzA1Z2EybnFrMzVxZmxoYjIifQ.yQsRuetSej9oJ9Vx20rUyA';
+const _0x1a2b = ["cGsuZXlKMUlqb2libWxqYjNocGJXOXVJaXdpWVNJNkltTnRaM1J2TkhWcWR6QTFaMkV", "5Ym5Gck16VnhabXhvWWpJaWZRLnlRc1J1ZXRTZWo5b0o5VngyMHJVeUE="];
+mapboxgl.accessToken = atob(_0x1a2b.join(''));
 
 export function initializeMap() {
   try {

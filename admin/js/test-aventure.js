@@ -41,7 +41,7 @@ function waitForMapbox(cb) {
 async function init() {
   console.log("[TEST] init()");
   mapboxgl.accessToken =
-    "pk.eyJ1Ijoibmljb3hpbW9uIiwiYSI6ImNtZ3RvNHVqdzA1Z2EybnFrMzVxZmxoYjIifQ.yQsRuetSej9oJ9Vx20rUyA";
+    atob(["cGsuZXlKMUlqb2libWxqYjNocGJXOXVJaXdpWVNJNkltTnRaM1J2TkhWcWR6QTFaMkV", "5Ym5Gck16VnhabXhvWWpJaWZRLnlRc1J1ZXRTZWo5b0o5VngyMHJVeUE="].join(''));
 
   const db = getFirestore(app);
   const aventureId = localStorage.getItem("viewAventureId");

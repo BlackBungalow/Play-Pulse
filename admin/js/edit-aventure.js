@@ -40,6 +40,7 @@ const illustrationPreview = document.getElementById("illustrationPreview");
 let aventureLineaire = false;
 let hasUnsavedChanges = false;
 let currentIllustrationUrl = null;
+let currentPois = []; // 🌍 Stockage global des POI chargés
 
 console.log("🧭 [INIT] Chargement du module edit-aventure.js...");
 console.log("📌 ID aventure :", aventureId);
@@ -206,7 +207,13 @@ async function loadPOIs() {
     }
 
     let pois = [];
-    poisSnap.forEach((poiDoc) => pois.push({ id: poiDoc.id, ...poiDoc.data() }));
+    poisSnap.forEach((poiDoc) => {
+      pois.push({ id: poiDoc.id, ...poiDoc.data() });
+    });
+
+    // Configurer la variable globale
+    currentPois = pois;
+
     if (aventureLineaire) pois.sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
 
     pois.forEach((poi) => {
@@ -484,7 +491,7 @@ form.addEventListener("submit", async (e) => {
 
       let mediaTexte = "";
       let mediaUrl = null;
-      const originalPoi = (aventuresData?.pois || []).find(p => p.id === poiId) || {};
+      const originalPoi = (currentPois || []).find(p => p.id === poiId) || {};
 
       // Initialize poiData with common fields
       const poiData = {

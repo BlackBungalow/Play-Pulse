@@ -121,6 +121,13 @@ export class ChallengeView {
         </audio>`;
     }
 
+    if (d.typeMedia === "iframe" && d.mediaUrl) {
+      html += `
+        <div class="challenge-iframe-container" style="position:relative; width:100%; height:60vh; overflow:hidden; border-radius:8px; border:1px solid #ddd;">
+          <iframe src="${d.mediaUrl}" style="width:100%; height:100%; border:0;" allow="camera; microphone; fullscreen; autoplay; geolocation"></iframe>
+        </div>`;
+    }
+
     return html ? `<section class="challenge-media">${html}</section>` : "";
   }
 
@@ -133,36 +140,37 @@ export class ChallengeView {
 
     if (type === "texte") {
       html = `
-        <div class="answer-block" id="textAnswerBlock">
-          <input type="text" id="challengeAnswer" placeholder="Votre réponse..." autocomplete="off"/>
-        </div>`;
+      < div class="answer-block" id = "textAnswerBlock" >
+        <input type="text" id="challengeAnswer" placeholder="Votre réponse..." autocomplete="off" />
+        </div > `;
     } else if (type === "qcm") {
       const options = [d.choix1, d.choix2, d.choix3, d.choix4].filter(Boolean);
       if (options.length) {
         html = `
-          <div class="answer-block" id="qcmAnswerBlock">
-            ${options
+      < div class="answer-block" id = "qcmAnswerBlock" >
+        ${options
             .map(
               (opt, i) =>
                 `<button class="qcm-btn" data-index="${i}">${opt}</button>`
             )
-            .join("")}
-          </div>`;
+            .join("")
+          }
+          </div > `;
       } else {
-        html = `<p class="challenge-error">⚠️ QCM non configuré.</p>`;
+        html = `< p class="challenge-error" >⚠️ QCM non configuré.</p > `;
       }
     } else if (type === "vocal") {
       html = `
-        <div class="answer-block" id="vocalAnswerBlock">
+      < div class="answer-block" id = "vocalAnswerBlock" >
           <button id="btnVocal" class="btn-vocal">🎤 Démarrer l'écoute</button>
           <p id="vocalFeedback" class="vocal-feedback"></p>
-        </div>`;
+        </div > `;
     } else if (type === "captureMedia") {
       html = `
-        <div class="answer-block" id="mediaCaptureBlock">
-          <input type="file" id="playerMediaInput"
-             accept="image/*,video/*" capture="environment">
-           <p id="mediaFeedback" class="vocal-feedback"></p>
+      < div class="answer-block" id = "mediaCaptureBlock" >
+        <input type="file" id="playerMediaInput"
+          accept="image/*,video/*" capture="environment">
+          <p id="mediaFeedback" class="vocal-feedback"></p>
         </div>`;
     }
 
@@ -264,7 +272,7 @@ export class ChallengeView {
         if (this.hintsUsed === 0) {
           if (this.data.indice1) {
             this.hintsUsed = 1;
-            hintText.textContent = `💡 Indice 1 : ${this.data.indice1}`;
+            hintText.textContent = `💡 Indice 1 : ${this.data.indice1} `;
             hintText.style.display = "block";
             hintText.style.color = "#d97706";
             btnHint.textContent = "💡 Indice suivant (-20%)";
@@ -273,7 +281,7 @@ export class ChallengeView {
           } else if (this.data.indice2) {
             // Cas rare ou indice 1 vide mais 2 existe
             this.hintsUsed = 2;
-            hintText.textContent = `💡 Indice 2 : ${this.data.indice2}`;
+            hintText.textContent = `💡 Indice 2 : ${this.data.indice2} `;
             hintText.style.display = "block";
             btnHint.style.display = "none";
           }
@@ -281,7 +289,7 @@ export class ChallengeView {
         // Si on a déjà vu l'indice 1, on veut le 2
         else if (this.hintsUsed === 1 && this.data.indice2) {
           this.hintsUsed = 2;
-          hintText.innerHTML += `<br><br>💡 Indice 2 : ${this.data.indice2}`;
+          hintText.innerHTML += `< br > <br>💡 Indice 2 : ${this.data.indice2}`;
           btnHint.style.display = "none";
         }
       });

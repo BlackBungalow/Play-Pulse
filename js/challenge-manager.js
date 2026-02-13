@@ -173,6 +173,16 @@ async function validateChallenge(poi, response, options = {}) {
 
     setTimeout(() => {
       showFloatingPopup(`🎉 Bravo ! +${poiScore} points`, "success");
+
+      // ✅ Fermeture automatique après succès
+      setTimeout(() => {
+        const closeBtn = document.getElementById("closeBtn"); // Fallback ancien
+        // Si on a accès à la vue, on ferme. Sinon on simule le clic fermer.
+        // Comme validateChallenge est appelé par ChallengeView, on ne peut pas appeler view.close() directement ici facilement sans refonte.
+        // Mais on peut déclencher le clic sur le bouton fermer de la modale active.
+        const activeCloseBtn = document.querySelector(".challenge-modal .close-btn") || document.getElementById("closeBtn");
+        if (activeCloseBtn) activeCloseBtn.click();
+      }, 1500); // 1.5s pour lire le message
     }, 250);
     return;
   }
@@ -185,6 +195,12 @@ async function validateChallenge(poi, response, options = {}) {
       await handleFailure(user.uid, aventureId, poiId, currentAttempt);
       disablePOI(poiId, "fail", 0);
       showFloatingPopup("😞 Échec du défi (plus de tentatives)", "fail");
+
+      // ✅ Fermeture automatique après échec définitif
+      setTimeout(() => {
+        const activeCloseBtn = document.querySelector(".challenge-modal .close-btn") || document.getElementById("closeBtn");
+        if (activeCloseBtn) activeCloseBtn.click();
+      }, 2000);
     } else {
       showFloatingPopup(
         `❌ Mauvaise réponse, il vous reste ${remaining} tentative${remaining > 1 ? "s" : ""}.`,

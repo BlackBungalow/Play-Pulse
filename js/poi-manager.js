@@ -141,6 +141,7 @@ export async function loadPOIs() {
       const el = document.createElement("div");
       el.className = "poi-marker";
       el.dataset.id = poi.id;
+      el.dataset.radius = poi.activationRadius || 25;
 
       const icon = document.createElement("div");
       icon.className = "poi-icon";
@@ -159,9 +160,18 @@ export async function loadPOIs() {
 
       // 🧭 Détection proximité joueur
       let isNearby = false;
-      if (playerPosition && !poiStatus) {
+      const isSimulation = new URLSearchParams(window.location.search).get("mode") === "simulation";
+
+      if (isSimulation) {
+        isNearby = true;
+        // Pas de pulse en simulation pour éviter de clignoter partout, juste clickable
+        // Ou pulse si on veut attirer l'attention. Disons pulse.
+        icon.classList.add("pulse");
+      } else if (playerPosition && !poiStatus) {
         const dist = getDistanceMeters(poi.lat, poi.lng, playerPosition.lat, playerPosition.lng);
-        if (dist <= 25) {
+        // Utilise le rayon personnalisé ou 25m par défaut
+        const radius = poi.activationRadius || 25;
+        if (dist <= radius) {
           isNearby = true;
           icon.classList.add("pulse");
         }
@@ -234,8 +244,15 @@ export function updatePlayerPosition(position) {
 
     const lngLat = marker.getLngLat();
     const dist = getDistanceMeters(lngLat.lat, lngLat.lng, position.lat, position.lng);
+    const isSimulation = new URLSearchParams(window.location.search).get("mode") === "simulation";
 
-    if (dist <= 25) {
+    // Récupère le rayon du POI (il faut qu'il soit stocké dans le dataset ou géré autrement)
+    // Comme on n'a pas les données brutes ici facilements (juste les markers), on va tricher
+    // ou mieux : on stocke le rayon dans le dataset du marker lors de la création
+    // Pour l'instant on garde 25m défaut si pas d'accès, mais on modifie loadPOIs pour stocker
+    const radius = Number(el.dataset.radius) || 25;
+
+    if (isSimulation || dist <= radius) {
       icon.classList.add("pulse");
       icon.style.cursor = "pointer";
     } else {

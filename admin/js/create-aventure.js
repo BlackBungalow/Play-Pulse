@@ -91,6 +91,9 @@ function addPoiToDOM(poi = {}, poiId = null) {
     <label>Coordonnées (lat, lng)</label>
     <input type="text" class="poi-coord" placeholder="Ex: 48.8566, 2.3522" value="${poi.lat || ""}, ${poi.lng || ""}" />
 
+    <label>Rayon d'activation (mètres)</label>
+    <input type="number" class="poi-radius" value="${poi.activationRadius || 25}" min="5" max="500" />
+
     <label>Question</label>
     <input type="text" class="poi-question" placeholder="Intitulé du défi" value="${poi.question || ""}" />
 
@@ -100,10 +103,12 @@ function addPoiToDOM(poi = {}, poiId = null) {
       <label><input type="radio" name="mediaType${uniq}" value="image" ${poi.typeMedia === "image" ? "checked" : ""}> Image</label>
       <label><input type="radio" name="mediaType${uniq}" value="video" ${poi.typeMedia === "video" ? "checked" : ""}> Vidéo</label>
       <label><input type="radio" name="mediaType${uniq}" value="audio" ${poi.typeMedia === "audio" ? "checked" : ""}> Audio</label>
+      <label><input type="radio" name="mediaType${uniq}" value="iframe" ${poi.typeMedia === "iframe" ? "checked" : ""}> Module (Iframe)</label>
     </div>
 
     <div class="poi-media" style="margin-top:0.5rem;">
       <textarea class="poi-media-texte" rows="2" style="${!poi.typeMedia || poi.typeMedia === "texte" ? "" : "display:none"}">${poi.mediaTexte || ""}</textarea>
+      <input type="text" class="poi-media-iframe" placeholder="URL du module (https://...)" style="${poi.typeMedia === "iframe" ? "width:100%;" : "display:none; width:100%;"}" value="${poi.mediaUrl || ""}">
       <input type="file" class="poi-media-fichier" style="${["image", "video", "audio"].includes(poi.typeMedia) ? "" : "display:none"}">
       <div class="mediaPreview">
         ${poi.image
@@ -112,7 +117,9 @@ function addPoiToDOM(poi = {}, poiId = null) {
         ? `<video src="${poi.video}" width="120" controls></video>`
         : poi.audio
           ? `<audio src="${poi.audio}" controls style="width:120px;"></audio>`
-          : ""
+          : poi.typeMedia === "iframe"
+            ? `<iframe src="${poi.mediaUrl}" width="120" height="80"></iframe>`
+            : ""
     }
       </div>
     </div>
@@ -164,18 +171,28 @@ function addPoiToDOM(poi = {}, poiId = null) {
     preview.innerHTML = html;
   }
 
-  radiosMedia.forEach(radio => {
+  radiosMedia.forEach(radio => { // Corrected loop for radiosMedia
     radio.addEventListener("change", () => {
       const type = poiDiv.querySelector(`input[name="mediaType${uniq}"]:checked`).value;
       mediaText.style.display = "none";
       mediaFile.style.display = "none";
+      if (mediaIframe) mediaIframe.style.display = "none"; // Added if (mediaIframe) check
       preview.innerHTML = "";
+
       if (type === "texte") mediaText.style.display = "block";
+      else if (type === "iframe") {
+        if (mediaIframe) mediaIframe.style.display = "block"; // Added if (mediaIframe) check
+      }
       else if (["image", "video", "audio"].includes(type)) {
         mediaFile.style.display = "block";
         mediaFile.accept = `${type}/*`;
       }
     });
+  });
+
+  mediaFile.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    const type = poiDiv.querySelector(`input[name="mediaType${uniq}"]:checked`).value;
   });
 
   mediaFile.addEventListener("change", (e) => {
@@ -343,6 +360,7 @@ form.addEventListener("submit", async (e) => {
       typeMedia,
       typeReponse,
       score: parseInt(item.querySelector(".poi-score").value || "10", 10),
+      activationRadius: parseInt(item.querySelector(".poi-radius").value || "25", 10),
       ordre: aventureLineaire ? parseInt(item.querySelector(".poi-ordre")?.value || 0) : null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -358,6 +376,8 @@ form.addEventListener("submit", async (e) => {
       if (file) poi[typeMedia] = await uploadMediaFile(file, typeMedia, aventureId);
     } else if (typeMedia === "texte") {
       poi.mediaTexte = item.querySelector(".poi-media-texte")?.value.trim() || "";
+    } else if (typeMedia === "iframe") {
+      poi.mediaUrl = item.querySelector(".poi-media-iframe")?.value.trim() || "";
     }
 
     if (typeReponse === "texte")

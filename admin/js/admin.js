@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // 👁 Visualiser
       if (e.target.classList.contains("view-btn")) {
         localStorage.setItem("viewAventureId", id);
-        window.open(`../game.html?id=${id}`, "_blank");
+        window.open(`../game.html?id=${id}&mode=simulation`, "_blank");
       }
 
       // 🗑️ Supprimer

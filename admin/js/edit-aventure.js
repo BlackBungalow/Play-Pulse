@@ -276,6 +276,9 @@ function addPoiToDOM(poi = {}, poiId = null) {
     <label>Coordonnées (lat, lng)</label>
     <input type="text" class="poi-coord" value="${poi.lat || ""}, ${poi.lng || ""}" />
 
+    <label>Rayon d'activation (mètres)</label>
+    <input type="number" class="poi-radius" value="${poi.activationRadius || 25}" min="5" max="500" />
+
     <label>Question</label>
     <input type="text" class="poi-question" value="${poi.question || ""}" />
 
@@ -285,23 +288,26 @@ function addPoiToDOM(poi = {}, poiId = null) {
       <label><input type="radio" name="mediaType${uniq}" value="image" ${poi.typeMedia === "image" ? "checked" : ""}> Image</label>
       <label><input type="radio" name="mediaType${uniq}" value="video" ${poi.typeMedia === "video" ? "checked" : ""}> Vidéo</label>
       <label><input type="radio" name="mediaType${uniq}" value="audio" ${poi.typeMedia === "audio" ? "checked" : ""}> Audio</label>
+      <label><input type="radio" name="mediaType${uniq}" value="iframe" ${poi.typeMedia === "iframe" ? "checked" : ""}> Module (Iframe)</label>
     </div>
 
     <div class="poi-media" style="margin-top:0.5rem;">
       <textarea class="poi-media-texte" rows="2" style="${!poi.typeMedia || poi.typeMedia === "texte" ? "" : "display:none"}">${poi.mediaTexte || ""}</textarea>
-      <input type="file" class="poi-media-fichier" style="${["image","video","audio"].includes(poi.typeMedia) ? "" : "display:none"}">
-      <div class="mediaPreview">
-        ${
-          poi.image
-            ? `<img src="${poi.image}" width="120"/>`
-            : poi.video
-            ? `<video src="${poi.video}" width="120" controls></video>`
-            : poi.audio
-            ? `<audio src="${poi.audio}" controls style="width:120px;"></audio>`
+      <input type="text" class="poi-media-iframe" placeholder="URL du module (https://...)" style="${poi.typeMedia === "iframe" ? "width:100%;" : "display:none; width:100%;"}" value="${poi.mediaUrl || ""}">
+      <input type="file" class="poi-media-fichier" style="${["image", "video", "audio"].includes(poi.typeMedia) ? "" : "display:none"}" >
+    <div class="mediaPreview">
+      ${poi.image
+      ? `<img src="${poi.image}" width="120"/>`
+      : poi.video
+        ? `<video src="${poi.video}" width="120" controls></video>`
+        : poi.audio
+          ? `<audio src="${poi.audio}" controls style="width:120px;"></audio>`
+          : poi.typeMedia === "iframe"
+            ? `<iframe src="${poi.mediaUrl}" width="120" height="80"></iframe>`
             : ""
-        }
-      </div>
+    }
     </div>
+    </div >
 
     <label>Type de réponse</label>
     <div class="radio-group poi-reponse-type">
@@ -325,7 +331,7 @@ function addPoiToDOM(poi = {}, poiId = null) {
         <label>Nombre maximum :</label>
         <input type="number" class="poi-max-attempts" value="${poi.maxAttempts || 3}" min="1" max="10" style="width:80px;" />
       </div>
-    </div>
+    </div >
 
     <div style="margin-top:8px;display:flex;gap:8px;">
       <button type="button" class="duplicatePoiBtn" ${poiId ? `data-id="${poiId}"` : ""}>📄 Dupliquer</button>
@@ -336,7 +342,7 @@ function addPoiToDOM(poi = {}, poiId = null) {
   poiContainer.appendChild(poiDiv);
 
   // === Gestion du type de média ===
-  const radiosMedia = poiDiv.querySelectorAll(`input[name="mediaType${uniq}"]`);
+  const radiosMedia = poiDiv.querySelectorAll(`input[name = "mediaType${uniq}"]`);
   const mediaText = poiDiv.querySelector(".poi-media-texte");
   const mediaFile = poiDiv.querySelector(".poi-media-fichier");
   const preview = poiDiv.querySelector(".mediaPreview");
@@ -345,9 +351,9 @@ function addPoiToDOM(poi = {}, poiId = null) {
     if (!file) return;
     const url = URL.createObjectURL(file);
     let html = "";
-    if (type === "image") html = `<img src="${url}" width="120" />`;
-    if (type === "video") html = `<video src="${url}" width="120" controls></video>`;
-    if (type === "audio") html = `<audio src="${url}" controls style="width:120px;"></audio>`;
+    if (type === "image") html = `< img src = "${url}" width = "120" /> `;
+    if (type === "video") html = `< video src = "${url}" width = "120" controls ></video > `;
+    if (type === "audio") html = `< audio src = "${url}" controls style = "width:120px;" ></audio > `;
     preview.innerHTML = html;
   }
 
@@ -356,11 +362,17 @@ function addPoiToDOM(poi = {}, poiId = null) {
       const type = poiDiv.querySelector(`input[name="mediaType${uniq}"]:checked`).value;
       mediaText.style.display = "none";
       mediaFile.style.display = "none";
-      preview.innerHTML = "";
+      const mediaIframe = poiDiv.querySelector(".poi-media-iframe");
+      if (mediaIframe) mediaIframe.style.display = "none";
 
-      if (type === "texte") {
-        mediaText.style.display = "block";
-      } else if (["image", "video", "audio"].includes(type)) {
+      const prev = poiDiv.querySelector(".mediaPreview");
+      if (prev) prev.innerHTML = "";
+
+      if (type === "texte") mediaText.style.display = "block";
+      else if (type === "iframe") {
+        if (mediaIframe) mediaIframe.style.display = "block";
+      }
+      else if (["image", "video", "audio"].includes(type)) {
         mediaFile.style.display = "block";
         mediaFile.accept = `${type}/*`;
       }
@@ -472,26 +484,37 @@ form.addEventListener("submit", async (e) => {
 
       let mediaTexte = "";
       let mediaUrl = null;
-      const mediaTextArea = poiDiv.querySelector(".poi-media-texte");
-      const mediaFile = poiDiv.querySelector(".poi-media-fichier");
+      const originalPoi = (aventuresData?.pois || []).find(p => p.id === poiId) || {};
 
-      if (typeMedia === "texte") {
-        mediaTexte = mediaTextArea?.value || "";
-      } else if (mediaFile?.files?.length > 0) {
-        const file = mediaFile.files[0];
-        mediaUrl = await uploadMediaFile(file, typeMedia, poiId);
-      }
-
+      // Initialize poiData with common fields
       const poiData = {
+        id: poiId || Date.now().toString(36), // Ensure ID
         lat,
         lng,
         question: poiDiv.querySelector(".poi-question").value.trim(),
         typeMedia,
-        mediaTexte,
         typeReponse,
         score,
+        activationRadius: parseInt(poiDiv.querySelector(".poi-radius").value || "25", 10),
         updatedAt: serverTimestamp(),
       };
+
+      // 🔹 Gestion du média (Texte / Iframe / Fichier)
+      if (typeMedia === "texte") {
+        poiData.mediaTexte = poiDiv.querySelector(".poi-media-texte")?.value.trim() || "";
+      } else if (typeMedia === "iframe") {
+        poiData.mediaUrl = poiDiv.querySelector(".poi-media-iframe")?.value.trim() || "";
+      } else if (["image", "video", "audio"].includes(typeMedia)) {
+        const fileInput = poiDiv.querySelector(".poi-media-fichier");
+        if (fileInput && fileInput.files.length > 0) {
+          // Upload new file (and delete old if exists)
+          const url = await uploadMediaFile(fileInput.files[0], typeMedia, poiData.id, originalPoi[typeMedia]);
+          poiData[typeMedia] = url;
+        } else {
+          // Keep existing
+          poiData[typeMedia] = originalPoi[typeMedia];
+        }
+      }
 
       // 🔹 QCM
       if (typeReponse === "qcm") {

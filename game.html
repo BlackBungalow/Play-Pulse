@@ -207,14 +207,8 @@
     // =========================================================
     // 🚪 Quitter une aventure
     // =========================================================
-    const quitButton = document.getElementById("quitButton");
-    if (quitButton) {
-      quitButton.addEventListener("click", () => {
-        if (confirm("Voulez-vous vraiment quitter cette aventure ? Votre progression sera sauvegardée.")) {
-          window.location.href = "joueur.html";
-        }
-      });
-    }
+    // La gestion est déjà faite dans main.js via confirmQuitAdventure
+    // On retire le doublon ici.
 
     // =========================================================
     // 🎯 Affichage du prénom et du titre d’aventure

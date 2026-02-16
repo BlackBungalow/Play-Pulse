@@ -269,7 +269,7 @@ if (addPoiBtn) {
 function addPoiToDOM(poi = {}, poiId = null) {
   console.log(`🧱 Ajout du POI dans le DOM (ID: ${poiId || "nouveau"})`);
 
-  const uniq = Date.now().toString(36);
+  const uniq = Math.random().toString(36).substr(2, 9);
   const poiDiv = document.createElement("div");
   poiDiv.classList.add("poi-item");
   if (poiId) poiDiv.dataset.id = poiId;

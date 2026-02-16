@@ -105,7 +105,8 @@ export function showChallenge(poi, options = {}) {
   const isAdmin = !!adminEmail;
 
   if (options.testMode) {
-    if (!isTestPage || !isAdmin) {
+    // Relaxed check: Allow testMode if user is admin (works on game.html?mode=simulation)
+    if (!isAdmin) {
       console.warn("🚫 Accès refusé au mode test — réservé à l'administration.");
       alert("⚠️ Fonction de test accessible uniquement depuis l’espace admin authentifié.");
       return;

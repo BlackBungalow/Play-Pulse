@@ -72,7 +72,7 @@ async function uploadMediaFile(file, type, aventureId, oldUrl = null) {
 // ➕ Ajout d’un POI dans le DOM
 // ===========================================================
 function addPoiToDOM(poi = {}, poiId = null) {
-  const uniq = Date.now().toString(36);
+  const uniq = Math.random().toString(36).substr(2, 9);
   const poiDiv = document.createElement("div");
   poiDiv.classList.add("poi-item");
   if (poiId) poiDiv.dataset.id = poiId;

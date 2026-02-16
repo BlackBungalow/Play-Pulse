@@ -192,7 +192,7 @@ export async function loadPOIs() {
         icon.addEventListener("click", (e) => {
           e.stopPropagation();
           console.log("🎯 Clic sur POI :", poi.id);
-          showChallenge(poi); // ✅ ouvre le défi
+          showChallenge(poi, { testMode: isSimulation }); // ✅ ouvre le défi (mode test si simulation)
         });
       }
 
@@ -213,6 +213,7 @@ export async function loadPOIs() {
       }
     }
 
+
     // ✅ Mise à jour du total dans progress
     if (user && poisCount > 0) {
       const progressRef = doc(db, "progress", `${user.uid}_${adventureId}`);
@@ -224,10 +225,91 @@ export async function loadPOIs() {
       }
     }
 
+    // 🎨 Affichage des zones d'activation (Rayon)
+    if (window.cityMap) {
+      const sourceId = "poi-zones";
+      const layerId = "poi-zones-layer";
+      const layerOutlineId = "poi-zones-outline";
+
+      const features = [];
+      snapshot.docs.forEach(docSnap => {
+        const p = docSnap.data();
+        if (!p.lat || !p.lng) return;
+
+        const center = [Number(p.lng), Number(p.lat)];
+        const radius = Number(p.activationRadius) || 25; // m
+        const circleParams = createGeoJSONCircle(center, radius);
+        features.push({
+          type: "Feature",
+          geometry: circleParams,
+          properties: { id: docSnap.id }
+        });
+      });
+
+      const geoJsonData = { type: "FeatureCollection", features };
+
+      if (window.cityMap.getSource(sourceId)) {
+        window.cityMap.getSource(sourceId).setData(geoJsonData);
+      } else {
+        window.cityMap.addSource(sourceId, { type: "geojson", data: geoJsonData });
+
+        // Zone de remplissage (très bleu clair)
+        window.cityMap.addLayer({
+          id: layerId,
+          type: "fill",
+          source: sourceId,
+          layout: {},
+          paint: {
+            "fill-color": "#3b82f6",
+            "fill-opacity": 0.15
+          }
+        });
+
+        // Contour de la zone
+        window.cityMap.addLayer({
+          id: layerOutlineId,
+          type: "line",
+          source: sourceId,
+          layout: {},
+          paint: {
+            "line-color": "#3b82f6",
+            "line-width": 1,
+            "line-opacity": 0.5,
+            "line-dasharray": [2, 2]
+          }
+        });
+      }
+    }
+
     lastLoadedPois = snapshot.docs.map((d) => d.id);
   } catch (err) {
     console.error("💥 Erreur lors du chargement des POI :", err);
   }
+}
+
+/* -------------------------------------------------------------
+   🔵 Helper: Générer un cercle GeoJSON (en mètres)
+------------------------------------------------------------- */
+function createGeoJSONCircle(center, radiusInMeters, points = 64) {
+  const coords = { latitude: center[1], longitude: center[0] };
+  const km = radiusInMeters / 1000;
+  const ret = [];
+  const distanceX = km / (111.32 * Math.cos((coords.latitude * Math.PI) / 180));
+  const distanceY = km / 110.574;
+
+  let theta, x, y;
+  for (let i = 0; i < points; i++) {
+    theta = (i / points) * (2 * Math.PI);
+    x = distanceX * Math.cos(theta);
+    y = distanceY * Math.sin(theta);
+    ret.push([coords.longitude + x, coords.latitude + y]);
+  }
+  ret.push(ret[0]); // Fermer le polygone
+
+  return {
+    type: "Polygon",
+    coordinates: [ret],
+  };
 }
 
 /* -------------------------------------------------------------

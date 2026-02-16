@@ -124,7 +124,12 @@ export class ChallengeView {
     if (d.typeMedia === "iframe" && d.mediaUrl) {
       html += `
         <div class="challenge-iframe-container" style="position:relative; width:100%; height:60vh; overflow:hidden; border-radius:8px; border:1px solid #ddd;">
-          <iframe src="${d.mediaUrl}" style="width:100%; height:100%; border:0;" allow="camera; microphone; fullscreen; autoplay; geolocation"></iframe>
+          <iframe 
+            src="${d.mediaUrl}" 
+            style="width:100%; height:100%; border:0;" 
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+            allow="camera *; microphone *; fullscreen; autoplay; geolocation; clipboard-read; clipboard-write">
+          </iframe>
         </div>`;
     }
 

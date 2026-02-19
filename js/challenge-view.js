@@ -145,14 +145,14 @@ export class ChallengeView {
 
     if (type === "texte") {
       html = `
-      < div class="answer-block" id = "textAnswerBlock" >
+      <div class="answer-block" id="textAnswerBlock">
         <input type="text" id="challengeAnswer" placeholder="Votre réponse..." autocomplete="off" />
-        </div > `;
+        </div>`;
     } else if (type === "qcm") {
       const options = [d.choix1, d.choix2, d.choix3, d.choix4].filter(Boolean);
       if (options.length) {
         html = `
-      < div class="answer-block" id = "qcmAnswerBlock" >
+      <div class="answer-block" id="qcmAnswerBlock">
         ${options
             .map(
               (opt, i) =>
@@ -160,19 +160,19 @@ export class ChallengeView {
             )
             .join("")
           }
-          </div > `;
+          </div>`;
       } else {
-        html = `< p class="challenge-error" >⚠️ QCM non configuré.</p > `;
+        html = `<p class="challenge-error">⚠️ QCM non configuré.</p>`;
       }
     } else if (type === "vocal") {
       html = `
-      < div class="answer-block" id = "vocalAnswerBlock" >
+      <div class="answer-block" id="vocalAnswerBlock">
           <button id="btnVocal" class="btn-vocal">🎤 Démarrer l'écoute</button>
           <p id="vocalFeedback" class="vocal-feedback"></p>
-        </div > `;
+        </div>`;
     } else if (type === "captureMedia") {
       html = `
-      < div class="answer-block" id = "mediaCaptureBlock" >
+      <div class="answer-block" id="mediaCaptureBlock">
         <input type="file" id="playerMediaInput"
           accept="image/*,video/*" capture="environment">
           <p id="mediaFeedback" class="vocal-feedback"></p>
@@ -294,7 +294,7 @@ export class ChallengeView {
         // Si on a déjà vu l'indice 1, on veut le 2
         else if (this.hintsUsed === 1 && this.data.indice2) {
           this.hintsUsed = 2;
-          hintText.innerHTML += `< br > <br>💡 Indice 2 : ${this.data.indice2}`;
+          hintText.innerHTML += `<br><br>💡 Indice 2 : ${this.data.indice2}`;
           btnHint.style.display = "none";
         }
       });

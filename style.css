@@ -217,7 +217,8 @@ body {
 .challenge-media video {
   width: 100%;
   border-radius: 12px;
-  max-height: 280px;
+  max-height: 50vh;
+  /* Augmenté de 280px à 50vh */
   object-fit: contain;
 }
 

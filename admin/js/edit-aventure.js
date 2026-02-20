@@ -5,7 +5,7 @@
 import { app, storage as globalStorage } from "/js/firebase-config.js";
 import {
   getFirestore, doc, getDoc, setDoc, Timestamp, serverTimestamp,
-  collection, getDocs, addDoc, deleteDoc
+  collection, getDocs, addDoc, deleteDoc, deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getStorage, ref, uploadBytes, getDownloadURL, deleteObject
@@ -506,34 +506,40 @@ form.addEventListener("submit", async (e) => {
         updatedAt: serverTimestamp(),
       };
 
-      // 🔹 Gestion du média (Texte / Iframe / Fichier)
-      if (typeMedia === "texte") {
-        poiData.mediaTexte = poiDiv.querySelector(".poi-media-texte")?.value.trim() || "";
-      } else if (typeMedia === "iframe") {
-        poiData.mediaUrl = poiDiv.querySelector(".poi-media-iframe")?.value.trim() || "";
-      } else if (["image", "video", "audio"].includes(typeMedia)) {
+      // 🔹 Gestion du média (Texte / Iframe / Fichier) - Nettoyage des vieux champs
+      poiData.mediaTexte = typeMedia === "texte" ? (poiDiv.querySelector(".poi-media-texte")?.value.trim() || "") : deleteField();
+      poiData.mediaUrl = typeMedia === "iframe" ? (poiDiv.querySelector(".poi-media-iframe")?.value.trim() || "") : deleteField();
+      poiData.image = deleteField();
+      poiData.video = deleteField();
+      poiData.audio = deleteField();
+
+      if (["image", "video", "audio"].includes(typeMedia)) {
         const fileInput = poiDiv.querySelector(".poi-media-fichier");
         if (fileInput && fileInput.files.length > 0) {
           // Upload new file (and delete old if exists)
           const url = await uploadMediaFile(fileInput.files[0], typeMedia, poiData.id, originalPoi[typeMedia]);
           poiData[typeMedia] = url;
-        } else {
+        } else if (originalPoi[typeMedia]) {
           // Keep existing
           poiData[typeMedia] = originalPoi[typeMedia];
         }
       }
 
-      // 🔹 QCM
+      // 🔹 Gestion type de réponse - Nettoyage des vieux champs
+      poiData.choix1 = deleteField();
+      poiData.choix2 = deleteField();
+      poiData.choix3 = deleteField();
+      poiData.choix4 = deleteField();
+      poiData.qcmCorrectIndex = deleteField();
+      poiData.reponse = deleteField();
+
       if (typeReponse === "qcm") {
         poiData.choix1 = poiDiv.querySelector(".poi-choix1")?.value || "";
         poiData.choix2 = poiDiv.querySelector(".poi-choix2")?.value || "";
         poiData.choix3 = poiDiv.querySelector(".poi-choix3")?.value || "";
         poiData.choix4 = poiDiv.querySelector(".poi-choix4")?.value || "";
         poiData.qcmCorrectIndex = parseInt(poiDiv.querySelector('input[name^="qcmCorrect"]:checked')?.value || 0);
-      }
-
-      // 🔹 Vocal ou texte simple
-      if (typeReponse === "texte" || typeReponse === "vocal") {
+      } else if (typeReponse === "texte" || typeReponse === "vocal") {
         poiData.reponse =
           poiDiv.querySelector(".poi-reponse-texte")?.value ||
           poiDiv.querySelector(".poi-reponse-vocale")?.value ||
@@ -544,13 +550,8 @@ form.addEventListener("submit", async (e) => {
       poiData.limitAttempts = poiDiv.querySelector(".poi-limit-checkbox")?.checked || false;
       if (poiData.limitAttempts) {
         poiData.maxAttempts = parseInt(poiDiv.querySelector(".poi-max-attempts")?.value || 3);
-      }
-
-      // 🔹 Média uploadé (si applicable)
-      if (mediaUrl) {
-        if (typeMedia === "image") poiData.image = mediaUrl;
-        if (typeMedia === "video") poiData.video = mediaUrl;
-        if (typeMedia === "audio") poiData.audio = mediaUrl;
+      } else {
+        poiData.maxAttempts = deleteField();
       }
 
       await setDoc(poiRef, poiData, { merge: true });
@@ -596,6 +597,11 @@ poiContainer.addEventListener("click", async (e) => {
   // --- SUPPRESSION ---
   if (btn.classList.contains("deletePoiBtn")) {
     if (!confirm("🗑️ Supprimer définitivement ce point d’intérêt ?")) return;
+
+    // 🛡️ Masquer immédiatement pour éviter conflit avec la sauvegarde
+    poiDiv.style.display = "none";
+    poiDiv.classList.remove("poi-item");
+
     try {
       const poiRef = doc(db, "aventures", aventureId, "pois", poiId);
 
@@ -627,6 +633,9 @@ poiContainer.addEventListener("click", async (e) => {
     } catch (err) {
       console.error("❌ Erreur suppression POI :", err);
       alert("Erreur lors de la suppression du POI.");
+      // Restauration UI en cas d'erreur
+      poiDiv.style.display = "block";
+      poiDiv.classList.add("poi-item");
     }
   }
 

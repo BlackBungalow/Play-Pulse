@@ -174,9 +174,10 @@ function addPoiToDOM(poi = {}, poiId = null) {
   radiosMedia.forEach(radio => { // Corrected loop for radiosMedia
     radio.addEventListener("change", () => {
       const type = poiDiv.querySelector(`input[name="mediaType${uniq}"]:checked`).value;
+      const mediaIframe = poiDiv.querySelector(".poi-media-iframe"); // Explicitly fetch the iframe input
       mediaText.style.display = "none";
       mediaFile.style.display = "none";
-      if (mediaIframe) mediaIframe.style.display = "none"; // Added if (mediaIframe) check
+      if (mediaIframe) mediaIframe.style.display = "none";
       preview.innerHTML = "";
 
       if (type === "texte") mediaText.style.display = "block";
